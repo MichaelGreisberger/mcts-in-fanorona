@@ -1,14 +1,38 @@
-import util.MoveType;
+package Fanorona;
+
+import Fanorona.util.MoveType;
 
 import java.awt.*;
+import java.util.Enumeration;
 
 public class Move {
     private final Point[] nodes;
     private final MoveType[] types;
-//    public static final String MOVES_TO_SHORT_ERROR_MESSAGE = "To short move length. Move must at least have length of 1.";
 
     public Move(int fromX, int fromY, int toX, int toY, MoveType type) {
         this(new Point(fromX, fromY), new Point(toX, toY), type);
+    }
+
+    public Move(String moveString) {
+        char[] chars = moveString.toCharArray();
+        int nodeCount = (moveString.length() - 2) / 3 + 1;
+        nodes = new Point[nodeCount];
+        types = new MoveType[nodeCount-1];
+        nodes[0] = new Point(chars[0] - 'a', chars[1] - 48);
+        for (int i = 4; i < chars.length; i += 3) {
+            nodes[(i - 2) / 3 + 1] = new Point(chars[i - 2] - 'a', chars[i - 1] - 48);
+            switch (chars[i]) {
+                case 'A':
+                    types[(i - 2) / 3] = MoveType.approach;
+                    break;
+                case 'W':
+                    types[(i - 2) / 3] = MoveType.withdraw;
+                    break;
+                case 'P':
+                    types[(i - 2) / 2 - 1] = MoveType.paika;
+                    break;
+            }
+        }
     }
 
     public Move(Point from, Point to, MoveType type) {
@@ -117,6 +141,14 @@ public class Move {
         }
     }
 
+    public static String movesToString(Iterable<Move> moves) {
+        StringBuilder sb = new StringBuilder();
+        for (Move mo : moves) {
+            sb.append(mo.toString()).append(", ");
+        }
+        return sb.toString();
+    }
+
     @Override
     public String toString() {
         String s = (char) ('a' + nodes[0].x) + "" + nodes[0].y;
@@ -125,4 +157,5 @@ public class Move {
         }
         return s;
     }
+
 }

@@ -1,26 +1,29 @@
-import util.BoardSize;
-import util.MoveType;
+package Fanorona;
+import Fanorona.util.BoardSize;
+import Fanorona.util.MoveType;
 
 import java.awt.*;
+import java.util.Base64;
 import java.util.LinkedList;
 import java.util.List;
 
 public class Board {
     private final int X_OFFSET = 3; //offset of positions (1 position = 2bits) previous to board-state-data (same for all sizes)
     private BoardSize size;
-    private String state;
     private char[] cState;
 
     public Board(BoardSize size, String state) {
+        this(size, state.toCharArray());
+    }
+
+    public Board(BoardSize size, char[] state) {
         this.size = size;
-        this.state = state;
-        this.cState = state.toCharArray();
+        this.cState = state;
     }
 
     public Board(BoardSize size) {
         this.size = size;
-        this.state = getInitialState();
-        cState = state.toCharArray();
+        cState = getInitialState().toCharArray();
     }
 
     public String getInitialState() {
@@ -36,10 +39,10 @@ public class Board {
         }
     }
 
-    public List<Move> getExtendedCaptureMoves(Move prevMove, int player, int opponent) {
-        Board newBoard = new Board(size, state);
-        List<Move> newMoves = new LinkedList<>();
-
+    public LinkedList<Move> getExtendedCaptureMoves(Move prevMove, int player, int opponent) {
+        Board newBoard = new Board(size, cState.clone());
+//        MoveList newMoves = new MoveList();
+        LinkedList<Move> newMoves = new LinkedList<>();
         Point currentPosition = prevMove.getLastToPositon();
         newBoard.move(prevMove.getLastFromPositon(), currentPosition, prevMove.getLastMoveType(), player, opponent);
 
@@ -57,7 +60,8 @@ public class Board {
         }
 
         if (!newMoves.isEmpty()) {
-            List<Move> newNewMoves = new LinkedList<>();
+//            MoveList newNewMoves = new MoveList();
+            LinkedList<Move> newNewMoves = new LinkedList<>();
             for (Move move : newMoves) {
                 newNewMoves.addAll(newBoard.getExtendedCaptureMoves(move, player, opponent));
             }
@@ -69,8 +73,10 @@ public class Board {
     public List<Move> getPossibleMoves() {
         int currPlayer = getCurrentPlayer();
         int opponent = currPlayer ^ 3;
-        List<Move> paikaMoves = new LinkedList<>();
-        List<Move> captureMoves = new LinkedList<>();
+        List<Fanorona.Move> paikaMoves = new LinkedList<>();
+        List<Fanorona.Move> captureMoves = new LinkedList<>();
+//        MoveList paikaMoves = new MoveList();
+//        MoveList captureMoves = new MoveList();
         for (int y = 0; y < size.y(); y++) {
             for (int x = 0; x < size.x(); x++) {
                 if (getPosition(x, y) == currPlayer) {
@@ -107,8 +113,8 @@ public class Board {
         int opponent = player ^ 3;
 
         for (int i = 1; i < nodes.length; i++) {
-            setPosition(nodes[i - 1].x, nodes[i - 1].y, 0);
-            move(nodes[i - 1], nodes[1], types[i - 1], player, opponent);
+            move(nodes[i - 1], nodes[i], types[i - 1], player, opponent);
+//            System.out.println(toPrintString());
         }
 
         setCurrentPlayer(opponent);
@@ -129,9 +135,9 @@ public class Board {
             case withdraw:
                 dirX = from.x - to.x;
                 dirY = from.y - to.y;
+                capture(to.x + dirX, to.y + dirY, dirX, dirY, opponent);
                 setPosition(from.x, from.y, 0);
                 setPosition(to.x, to.y, player);
-                capture(to.x + dirX, to.y + dirY, dirX, dirY, opponent);
                 break;
             case paika:
                 setPosition(from.x, from.y, 0);
@@ -192,20 +198,24 @@ public class Board {
     }
 
     private List<Point> getAightNeigbours(int x, int y) {
-        List<Point> neighbours = getFourNeigbours(x, y);
-        if (isInBoardSpace(x + 1, y + 1)) neighbours.add(new Point(x + 1, y + 1));
+        List<Point> neighbours = new LinkedList<>();
+        if (isInBoardSpace(x, y - 1)) neighbours.add(new Point(x, y - 1));
         if (isInBoardSpace(x + 1, y - 1)) neighbours.add(new Point(x + 1, y - 1));
+        if (isInBoardSpace(x + 1, y)) neighbours.add(new Point(x + 1, y));
+        if (isInBoardSpace(x + 1, y + 1)) neighbours.add(new Point(x + 1, y + 1));
+        if (isInBoardSpace(x, y + 1)) neighbours.add(new Point(x, y + 1));
         if (isInBoardSpace(x - 1, y + 1)) neighbours.add(new Point(x - 1, y + 1));
+        if (isInBoardSpace(x - 1, y)) neighbours.add(new Point(x - 1, y));
         if (isInBoardSpace(x - 1, y - 1)) neighbours.add(new Point(x - 1, y - 1));
         return neighbours;
     }
 
     private List<Point> getFourNeigbours(int x, int y) {
         List<Point> neighbours = new LinkedList<>();
-        if (isInBoardSpace(x - 1, y)) neighbours.add(new Point(x - 1, y));
-        if (isInBoardSpace(x + 1, y)) neighbours.add(new Point(x + 1, y));
         if (isInBoardSpace(x, y - 1)) neighbours.add(new Point(x, y - 1));
+        if (isInBoardSpace(x + 1, y)) neighbours.add(new Point(x + 1, y));
         if (isInBoardSpace(x, y + 1)) neighbours.add(new Point(x, y + 1));
+        if (isInBoardSpace(x - 1, y)) neighbours.add(new Point(x - 1, y));
         return neighbours;
     }
 
@@ -243,6 +253,15 @@ public class Board {
         return ret;
     }
 
+    public String getStateB64() {
+        return Base64.getEncoder().encodeToString(new String(cState).getBytes());
+    }
+
+    public static Board fromB64(String s64, BoardSize size) {
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] bState = decoder.decode(s64);
+        return new Board(size, new String(bState));
+    }
 
     /**
      * determines the current player (first 2 bit of state)
@@ -256,11 +275,11 @@ public class Board {
     public String toPrintString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getCurrentPlayer() == 1 ? "White's turn\n" : "Black's turn\n");
-        sb.append("  a   b   c   d   e   f   g   h   i\n");
+        sb.append(getPrintHeader());
         int xlength = size.x() * 2 - 1; //x nodes, x-1 spaces in between
         int ylength = size.y() * 2 - 1;
         for (int y = 0; y < ylength; y++) {
-            sb.append(y % 2 == 0 ? y/2 + " " : "  ");
+            sb.append(y % 2 == 0 ? y / 2 + " " : "  ");
             for (int x = 0; x < xlength; x++) {
                 if (x % 2 == 0) {
                     if (y % 2 == 0) {
@@ -281,6 +300,20 @@ public class Board {
             sb.append("\n");
         }
         return sb.toString();
+    }
+
+    private String getPrintHeader() {
+        switch (size) {
+            case large:
+                return "  a   b   c   d   e   f   g   h   i\n";
+            case medium:
+                return "  a   b   c   d   e\n";
+            case small:
+                return "  a   b   c\n";
+            default:
+                return "Unknown Boardsize";
+        }
+
     }
 
     private String getInitialStateSmall() {

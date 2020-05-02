@@ -1,4 +1,4 @@
-package util;
+package Fanorona.util;
 
 import java.awt.*;
 
