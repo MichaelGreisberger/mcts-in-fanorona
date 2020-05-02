@@ -7,14 +7,24 @@ public class MoveList implements Iterable<Move> {
     private MoveNode last;
     private int count = 0;
 
+    /**
+     * @return the first move of this collection of moves
+     */
     public MoveNode getFirst() {
         return first;
     }
 
+    /**
+     * @return the last move of this collection of moves
+     */
     public MoveNode getLast() {
         return last;
     }
 
+    /**
+     * Adds another move to the tail of this collection
+     * @param move move to add
+     */
     public void append(Move move) {
         if (first == null) {
             first = new MoveNode(move);
@@ -36,6 +46,10 @@ public class MoveList implements Iterable<Move> {
         return count;
     }
 
+    /**
+     * Adds a collection of moves to the tail of this collection
+     * @param moves moves to add
+     */
     public void append(MoveList moves) {
         if (isEmpty()) {
             first = moves.first;
@@ -49,6 +63,10 @@ public class MoveList implements Iterable<Move> {
         }
     }
 
+    /**
+     * @param index position of the move in the collection
+     * @return the move at the given index
+     */
     public Move get(int index) {
         if (index > count - 1) throw new IndexOutOfBoundsException();
         MoveNode curr = first;
@@ -58,6 +76,9 @@ public class MoveList implements Iterable<Move> {
         return curr.move;
     }
 
+    /**
+     * @return true if this collection does not contain elements
+     */
     public boolean isEmpty() {
         return first == null;
     }

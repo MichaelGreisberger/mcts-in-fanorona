@@ -26,7 +26,10 @@ public class Board {
         cState = getInitialState().toCharArray();
     }
 
-    public String getInitialState() {
+    /**
+     * @return the initial state of the current board
+     */
+    private String getInitialState() {
         switch (size) {
             case small:
                 return getInitialStateSmall();
@@ -39,16 +42,22 @@ public class Board {
         }
     }
 
+    /**
+     * Searches for all possible extended capture moves from the previous move
+     * @param prevMove the move to extend
+     * @param player the current player
+     * @param opponent the current opponent
+     * @return all possible extended capture moves to the previous move
+     */
     public MoveList getExtendedCaptureMoves(Move prevMove, int player, int opponent) {
         Board newBoard = new Board(size, cState.clone());
         MoveList newMoves = new MoveList();
-//        LinkedList<Move> newMoves = new LinkedList<>();
-        Point currentPosition = prevMove.getLastToPositon();
-        newBoard.move(prevMove.getLastFromPositon(), currentPosition, prevMove.getLastMoveType(), player, opponent);
+        Point currentPosition = prevMove.getLastToPosition();
+        newBoard.move(prevMove.getLastFromPosition(), currentPosition, prevMove.getLastMoveType(), player, opponent);
 
         Move newMove;
 
-        for (Point emptyNeighbour : newBoard.getEmptyNeigbours(currentPosition.x, currentPosition.y)) {
+        for (Point emptyNeighbour : newBoard.getEmptyNeighbours(currentPosition.x, currentPosition.y)) {
             if (isOpponentInDirection(currentPosition.x, currentPosition.y, emptyNeighbour, opponent)) {
                 newMove = prevMove.extendCapture(emptyNeighbour, MoveType.approach);
                 if (newMove.appliesToRules()) newMoves.append(newMove);
@@ -61,7 +70,6 @@ public class Board {
 
         if (!newMoves.isEmpty()) {
             MoveList newNewMoves = new MoveList();
-//            LinkedList<Move> newNewMoves = new LinkedList<>();
             for (Move move : newMoves) {
                 newNewMoves.append(newBoard.getExtendedCaptureMoves(move, player, opponent));
             }
@@ -70,17 +78,22 @@ public class Board {
         return newMoves;
     }
 
+    /**
+     * Searches for all possible moves for the current board state. If there are no capture moves possible then
+     * all possible paika moves are returned. If there are capture moves possible then this method searches for possible
+     * extended capture moves. It returns all variations of capture and extended capture moves. For example if there is
+     * a capture move like f1f2A and an extended capture move f1f2Ae2W then both moves are returned.
+     * @return All possible moves for the current state of the Board according to the rules.
+     */
     public MoveList getPossibleMoves() {
         int currPlayer = getCurrentPlayer();
         int opponent = currPlayer ^ 3;
-//        List<Fanorona.Move> paikaMoves = new LinkedList<>();
-//        List<Fanorona.Move> captureMoves = new LinkedList<>();
         MoveList paikaMoves = new MoveList();
         MoveList captureMoves = new MoveList();
         for (int y = 0; y < size.y(); y++) {
             for (int x = 0; x < size.x(); x++) {
                 if (getPosition(x, y) == currPlayer) {
-                    List<Point> neighbours = getEmptyNeigbours(x, y);
+                    List<Point> neighbours = getEmptyNeighbours(x, y);
                     for (Point point : neighbours) {
                         if (isOpponentInDirection(x, y, point, opponent)) {
                             Move move = new Move(x, y, point, MoveType.approach);
@@ -106,6 +119,11 @@ public class Board {
         }
     }
 
+    /**
+     * Executes the given move. Moves the piece and captures all enemy pieces.
+     * This method can execute all types of moves (approach, withdrawal, paika, extended capturing)
+     * @param move the move to execute
+     */
     public void applyMove(Move move) {
         MoveType[] types = move.getTypes();
         Point[] nodes = move.getNodes();
@@ -114,14 +132,20 @@ public class Board {
 
         for (int i = 1; i < nodes.length; i++) {
             move(nodes[i - 1], nodes[i], types[i - 1], player, opponent);
-//            System.out.println(toPrintString());
         }
 
         setCurrentPlayer(opponent);
-
     }
 
-    public void move(Point from, Point to, MoveType type, int player, int opponent) {
+    /**
+     * Executes a single move (for example one part of an extended capture move)
+     * @param from starting position of this move
+     * @param to ending position of this move
+     * @param type type of this move (approach, withdrawal, paika)
+     * @param player the current player
+     * @param opponent the opponent player
+     */
+    private void move(Point from, Point to, MoveType type, int player, int opponent) {
         int dirX;
         int dirY;
         switch (type) {
@@ -145,6 +169,16 @@ public class Board {
         }
     }
 
+    /**
+     * captures the position specified by the parameters x and y. Then evaluates the next position in
+     * the direction specified with the parameters dirX and dirY and captures the position if it was inhabited by an
+     * opponent piece.
+     * @param x x coordinate of the position that should be captured
+     * @param y y coordinate of the position that should be captured
+     * @param dirX x direction to look for more opponent pieces to capture
+     * @param dirY y direction to look for more opponent pieces to capture
+     * @param opponent pieces to capture
+     */
     public void capture(int x, int y, int dirX, int dirY, int opponent) {
         setPosition(x, y, 0);
         int nextX = x + dirX;
@@ -154,11 +188,23 @@ public class Board {
         }
     }
 
-    public void setCurrentPlayer(int player) {
-        int clearMask = ~(3 << 6);
+    /**
+     * Sets the current player in this boards state to the given player
+     * @param player current player for this board state.
+     */
+    private void setCurrentPlayer(int player) {
+        int clearMask = ~(3 << 6); //ToDo: replace with actual value
         cState[0] = (char) (cState[0] & clearMask | (player << 6));
     }
 
+    /**
+     * Evaluated whether there is an opponent piece in the direction specified by direction.
+     * @param fromX x coordinate of the position from with the current player moves the piece
+     * @param fromY y coordinate of the position from with the current player moves the piece
+     * @param direction Point to which the current player moves the piece
+     * @param opponent opponent player
+     * @return true if there is an opponent piece in direction of the move
+     */
     private boolean isOpponentInDirection(int fromX, int fromY, Point direction, int opponent) {
         int targetX = fromX + (direction.x - fromX) * 2;
         int targetY = fromY + (direction.y - fromY) * 2;
@@ -169,6 +215,14 @@ public class Board {
         }
     }
 
+    /**
+     * Evaluated whether there is an opponent piece against the direction specified by direction.
+     * @param fromX x coordinate of the position from with the current player moves the piece
+     * @param fromY y coordinate of the position from with the current player moves the piece
+     * @param direction Point to which the current player moves the piece
+     * @param opponent opponent player
+     * @return true if there is an opponent piece against the direction of the move
+     */
     private boolean isOpponentAgainstDirection(int fromX, int fromY, Point direction, int opponent) {
         int targetX = fromX - (direction.x - fromX);
         int targetY = fromY - (direction.y - fromY);
@@ -179,25 +233,47 @@ public class Board {
         }
     }
 
-    public List<Point> getEmptyNeigbours(int x, int y) {
-        List<Point> neigbours = new LinkedList<>();
+    /**
+     * Returns a list of points containing all empty positions in the neighbourhood of the position specified by the
+     * parameters x and y. 
+     * @param x x coordinate of the position for which to search empty neighbours
+     * @param y y coordinate of the position for which to search empty neighbours
+     * @return all empty neighbours of the specified position
+     */
+    public List<Point> getEmptyNeighbours(int x, int y) {
+        List<Point> neighbours = new LinkedList<>();
         for (Point point : getSurroundingNodes(x, y)) {
             if (getPosition(point.x, point.y) == 0) {
-                neigbours.add(point);
+                neighbours.add(point);
             }
         }
-        return neigbours;
+        return neighbours;
     }
 
+    /**
+     * Returns a list of points containing all positions in the neighbourhood of the position specified by the
+     * parameters x and y. 
+     * @param x x coordinate of the position for which to search all neighbours
+     * @param y y coordinate of the position for which to search all neighbours
+     * @return all neighbours of the specified position
+     */    
     public List<Point> getSurroundingNodes(int x, int y) {
         if (isStrongNode(x, y)) {
-            return getAightNeigbours(x, y);
+            return getEightNeighbours(x, y);
         } else {
-            return getFourNeigbours(x, y);
+            return getFourNeighbours(x, y);
         }
     }
 
-    private List<Point> getAightNeigbours(int x, int y) {
+    /**
+     * Returns a list containing all eight neighbours of the specified position. This method does not check whether the
+     * specified position has eight neighbours or not. It does check whether a possible neighbour is in the boundaries
+     * of the board or not.
+     * @param x x coordinate of the position for which to return the neighbours
+     * @param y y coordinate of the position for which to return the neighbours
+     * @return All eight neighbours of the specified position.
+     */
+    private List<Point> getEightNeighbours(int x, int y) {
         List<Point> neighbours = new LinkedList<>();
         if (isInBoardSpace(x, y - 1)) neighbours.add(new Point(x, y - 1));
         if (isInBoardSpace(x + 1, y - 1)) neighbours.add(new Point(x + 1, y - 1));
@@ -210,7 +286,15 @@ public class Board {
         return neighbours;
     }
 
-    private List<Point> getFourNeigbours(int x, int y) {
+    /**
+     * Returns a list containing all four neighbours of the specified position. This method does not check whether the
+     * specified position has more than four neighbours. It does check whether a possible neighbour is in the boundaries
+     * of the board or not.
+     * @param x x coordinate of the position for which to return the neighbours
+     * @param y y coordinate of the position for which to return the neighbours
+     * @return All eight neighbours of the specified position.
+     */
+    private List<Point> getFourNeighbours(int x, int y) {
         List<Point> neighbours = new LinkedList<>();
         if (isInBoardSpace(x, y - 1)) neighbours.add(new Point(x, y - 1));
         if (isInBoardSpace(x + 1, y)) neighbours.add(new Point(x + 1, y));
@@ -219,18 +303,41 @@ public class Board {
         return neighbours;
     }
 
+    /**
+     * Evaluates whether the specified position is a strong node (with eight neighbours) or not (with four neighbours)
+     * @param x x coordinate of the position in question
+     * @param y y coordinate of the position in question
+     * @return true if this position has eight neighbours and false otherwise
+     */
     private boolean isStrongNode(int x, int y) {
         return (x + y * size.x()) % 2 == 0;
     }
 
+    /**
+     * Evaluates whether the specified position is in the boundaries of the board.
+     * @param x x coordinate of the position in question
+     * @param y y coordinate of the position in question
+     * @return true if this position is in the boundaries of the board and false otherwise
+     */
     private boolean isInBoardSpace(int x, int y) {
         return x >= 0 && x < size.x() && y >= 0 && y < size.y();
     }
 
+    /**
+     * Changes the board state at the position specified by position to the value specified by newVal
+     * @param position position for which to change the value
+     * @param newVal the new value of the position
+     */
     public void setPosition(Point position, int newVal) {
         setPosition(position.x, position.y, newVal);
     }
 
+    /**
+     * Changes the board state at the position specified by position to the value specified by newVal
+     * @param x x coordinate of the position for which to change the value
+     * @param y y coordinate of the position for which to change the value
+     * @param newVal the new value of the position
+     */
     public void setPosition(int x, int y, int newVal) {
         double temp = (double) (x + X_OFFSET + y * size.x()) / 4;
         int position = (int) temp;
@@ -239,10 +346,21 @@ public class Board {
         cState[position] = (char) (cState[position] & clearMask | (newVal << shift));
     }
 
+    /**
+     * Returns the value of the board state at the specified position
+     * @param position position for which to return the current board state
+     * @return Returns the value of the board state at the specified position
+     */
     public int getPosition(Point position) {
         return getPosition(position.x, position.y);
     }
 
+    /**
+     * Returns the value of the board state at the specified position
+     * @param x x coordinate of the position for which to return the current board state
+     * @param y x coordinate of the  position for which to return the current board state
+     * @return Returns the value of the board state at the specified position
+     */
     public int getPosition(int x, int y) {
 
         double temp = (double) (x + X_OFFSET + y * size.x()) / 4;
@@ -253,10 +371,20 @@ public class Board {
         return ret;
     }
 
+    /**
+     * Returns the current State encoded in a Base64 String
+     * @return the current State encoded in a Base64 String
+     */
     public String getStateB64() {
         return Base64.getEncoder().encodeToString(new String(cState).getBytes());
     }
 
+    /**
+     * Returns the board initialized with the state specified by the Base64 encoded string s64
+     * @param s64 A string representation of the desired board state in Base64 encoding
+     * @param size The size of the desired board
+     * @returnthe board initialized with the state specified by the Base64 encoded string s64
+     */
     public static Board fromB64(String s64, BoardSize size) {
         Base64.Decoder decoder = Base64.getDecoder();
         byte[] bState = decoder.decode(s64);
@@ -272,6 +400,9 @@ public class Board {
         return cState[0] >> 6;
     }
 
+    /**
+     * @return a human readable string representation of the state of the current board.
+     */
     public String toPrintString() {
         StringBuilder sb = new StringBuilder();
         sb.append(getCurrentPlayer() == 1 ? "White's turn\n" : "Black's turn\n");
@@ -302,6 +433,9 @@ public class Board {
         return sb.toString();
     }
 
+    /**
+     * @return the column headers of the current board.
+     */
     private String getPrintHeader() {
         switch (size) {
             case large:
@@ -313,9 +447,11 @@ public class Board {
             default:
                 return "Unknown Boardsize";
         }
-
     }
 
+    /**
+     * @return returns the initial state of a small board
+     */
     private String getInitialStateSmall() {
         return "B¤\u0095";
         /*
@@ -325,6 +461,9 @@ public class Board {
          */
     }
 
+    /**
+     * @return returns the initial state of a medium board
+     */
     private String getInitialStateMedium() {
         return "Bªª¤\u0095UU";
         /*
@@ -338,6 +477,9 @@ public class Board {
          */
     }
 
+    /**
+     * @return returns the initial state of a large board
+     */
     private String getInitialStateLarge() {
         return "Bªªªª¦I\u0095UUUU";
         /*
