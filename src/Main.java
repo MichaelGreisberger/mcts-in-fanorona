@@ -1,5 +1,6 @@
 import Fanorona.Board;
 import Fanorona.Move;
+import Fanorona.MoveList;
 import Fanorona.util.BoardSize;
 
 import java.io.BufferedReader;
@@ -19,8 +20,8 @@ public class Main {
     public static void main(String[] args) {
 
         movesDict = getMovesDict();
-//        MoveList moves = board.getPossibleMoves();
-        List<Move> moves = board.getPossibleMoves();
+        MoveList moves = board.getPossibleMoves();
+//        List<Move> moves = board.getPossibleMoves();
         Random rand = new Random();
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String input;
@@ -126,8 +127,8 @@ public class Main {
 
     private static Map<String, Move> getMovesDict() {
         Map<String, Move> moves = new HashMap<>();
-//        MoveList possibleMoves = board.getPossibleMoves();
-        List<Move> possibleMoves = board.getPossibleMoves();
+        MoveList possibleMoves = board.getPossibleMoves();
+//        List<Move> possibleMoves = board.getPossibleMoves();
         for (Move move : possibleMoves) {
             moves.put(move.toString(), move);
         }

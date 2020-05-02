@@ -4,6 +4,8 @@ import java.util.Iterator;
 
 public class MoveList implements Iterable<Move> {
     private MoveNode first;
+    private MoveNode last;
+    private int count = 0;
 
     public MoveNode getFirst() {
         return first;
@@ -12,9 +14,6 @@ public class MoveList implements Iterable<Move> {
     public MoveNode getLast() {
         return last;
     }
-
-    private MoveNode last;
-    private int count;
 
     public void append(Move move) {
         if (first == null) {
@@ -41,6 +40,7 @@ public class MoveList implements Iterable<Move> {
         if (isEmpty()) {
             first = moves.first;
             last = moves.last;
+            count += moves.count;
         } else if (!moves.isEmpty()) {
             last.next = moves.first;
             moves.first.prev = last;

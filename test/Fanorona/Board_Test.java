@@ -153,7 +153,7 @@ public class Board_Test {
     @Test
     void boardPossibleMovesExampleState1_success() {
         Board board = new Board(BoardSize.large, BoardStateExamples.EXAMPLE_STATE_1);
-        List<Move> actualList = board.getPossibleMoves();
+        MoveList actualList = board.getPossibleMoves();
         String expected = "f1e0W, f1e0Wd1A, i1i0W, i1i0Wh1A, a2b2A, a2b2Ab1W, d3c3A, d3c3Ac4W, d3c3Ac4Wd4W, d3e4W, d3e4Wf3A, ";
         assertEquals(11, actualList.size());
         for (Move move : actualList) {
@@ -178,7 +178,7 @@ public class Board_Test {
     @Test
     public void boardPossibleMovesPaperExampleState_success() {
         Board board = new Board(BoardSize.large, BoardStateExamples.PAPER_EXAMPLE_STATE);
-        List<Move> actualList = board.getPossibleMoves();
+        MoveList actualList = board.getPossibleMoves();
         String expected = "f1e2A, f1e2Ae1W, f1e2Af3W, f1e1A, f1e1Ae2A, f1e1W, f1e1We2A, f1e1We2Af3W, f1e1We2Af3We3A, f1e1We2Af3We3W, b3c2A, b3c2Ac3W, b3c2Ab1W, b3c2Ab1Wa1W, b3c3A, b3c3Ac2A, ";
         assertEquals(16, actualList.size());
         for (Move move : actualList) {

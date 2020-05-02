@@ -39,10 +39,10 @@ public class Board {
         }
     }
 
-    public LinkedList<Move> getExtendedCaptureMoves(Move prevMove, int player, int opponent) {
+    public MoveList getExtendedCaptureMoves(Move prevMove, int player, int opponent) {
         Board newBoard = new Board(size, cState.clone());
-//        MoveList newMoves = new MoveList();
-        LinkedList<Move> newMoves = new LinkedList<>();
+        MoveList newMoves = new MoveList();
+//        LinkedList<Move> newMoves = new LinkedList<>();
         Point currentPosition = prevMove.getLastToPositon();
         newBoard.move(prevMove.getLastFromPositon(), currentPosition, prevMove.getLastMoveType(), player, opponent);
 
@@ -51,32 +51,32 @@ public class Board {
         for (Point emptyNeighbour : newBoard.getEmptyNeigbours(currentPosition.x, currentPosition.y)) {
             if (isOpponentInDirection(currentPosition.x, currentPosition.y, emptyNeighbour, opponent)) {
                 newMove = prevMove.extendCapture(emptyNeighbour, MoveType.approach);
-                if (newMove.appliesToRules()) newMoves.add(newMove);
+                if (newMove.appliesToRules()) newMoves.append(newMove);
             }
             if (isOpponentAgainstDirection(currentPosition.x, currentPosition.y, emptyNeighbour, opponent)) {
                 newMove = prevMove.extendCapture(emptyNeighbour, MoveType.withdraw);
-                if (newMove.appliesToRules()) newMoves.add(newMove);
+                if (newMove.appliesToRules()) newMoves.append(newMove);
             }
         }
 
         if (!newMoves.isEmpty()) {
-//            MoveList newNewMoves = new MoveList();
-            LinkedList<Move> newNewMoves = new LinkedList<>();
+            MoveList newNewMoves = new MoveList();
+//            LinkedList<Move> newNewMoves = new LinkedList<>();
             for (Move move : newMoves) {
-                newNewMoves.addAll(newBoard.getExtendedCaptureMoves(move, player, opponent));
+                newNewMoves.append(newBoard.getExtendedCaptureMoves(move, player, opponent));
             }
-            newMoves.addAll(newNewMoves);
+            newMoves.append(newNewMoves);
         }
         return newMoves;
     }
 
-    public List<Move> getPossibleMoves() {
+    public MoveList getPossibleMoves() {
         int currPlayer = getCurrentPlayer();
         int opponent = currPlayer ^ 3;
-        List<Fanorona.Move> paikaMoves = new LinkedList<>();
-        List<Fanorona.Move> captureMoves = new LinkedList<>();
-//        MoveList paikaMoves = new MoveList();
-//        MoveList captureMoves = new MoveList();
+//        List<Fanorona.Move> paikaMoves = new LinkedList<>();
+//        List<Fanorona.Move> captureMoves = new LinkedList<>();
+        MoveList paikaMoves = new MoveList();
+        MoveList captureMoves = new MoveList();
         for (int y = 0; y < size.y(); y++) {
             for (int x = 0; x < size.x(); x++) {
                 if (getPosition(x, y) == currPlayer) {
@@ -84,16 +84,16 @@ public class Board {
                     for (Point point : neighbours) {
                         if (isOpponentInDirection(x, y, point, opponent)) {
                             Move move = new Move(x, y, point, MoveType.approach);
-                            captureMoves.add(move);
-                            captureMoves.addAll(getExtendedCaptureMoves(move, currPlayer, opponent));
+                            captureMoves.append(move);
+                            captureMoves.append(getExtendedCaptureMoves(move, currPlayer, opponent));
                         }
                         if (isOpponentAgainstDirection(x, y, point, opponent)) {
                             Move move = new Move(x, y, point, MoveType.withdraw);
-                            captureMoves.add(move);
-                            captureMoves.addAll(getExtendedCaptureMoves(move, currPlayer, opponent));
+                            captureMoves.append(move);
+                            captureMoves.append(getExtendedCaptureMoves(move, currPlayer, opponent));
                         }
                         if (captureMoves.isEmpty()) {
-                            paikaMoves.add(new Move(x, y, point.x, point.y, MoveType.paika));
+                            paikaMoves.append(new Move(x, y, point.x, point.y, MoveType.paika));
                         }
                     }
                 }
