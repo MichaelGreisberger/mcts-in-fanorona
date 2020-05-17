@@ -1,9 +1,6 @@
-package Fanorona;
-
-import Fanorona.util.MoveType;
+package Fanorona.Move;
 
 import java.awt.*;
-import java.util.Enumeration;
 
 public class Move {
     private final Point[] nodes;

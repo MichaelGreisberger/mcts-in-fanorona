@@ -1,8 +1,6 @@
-package Fanorona;
+package Fanorona.Move;
 
-import Fanorona.Move;
 import org.junit.jupiter.api.Test;
-import Fanorona.util.MoveType;
 
 import java.awt.*;
 
@@ -57,10 +55,10 @@ public class Move_Test {
     }
 //    @Test
 //    public void testCreateMove_failureToShort() {
-//        Fanorona.Move move = new Fanorona.Move(new Point[] {new Point(0,0)}, new MoveType[] {});
+//        Fanorona.Move.Move move = new Fanorona.Move.Move(new Point[] {new Point(0,0)}, new MoveType[] {});
 //        Exception expectedException = assertThrows(Exception.class, () -> move.isValidMove());
 //
-//        String expectedMessage = Fanorona.Move.MOVES_TO_SHORT_ERROR_MESSAGE;
+//        String expectedMessage = Fanorona.Move.Move.MOVES_TO_SHORT_ERROR_MESSAGE;
 //        String actualMessage = expectedException.getMessage();
 //        assertEquals(expectedMessage, actualMessage);
 //    }

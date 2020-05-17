@@ -1,18 +1,18 @@
-package Fanorona;
+package Fanorona.Board;
 
-import Fanorona.util.BoardSize;
-import Fanorona.util.BoardStateExamples;
+import Fanorona.Move.Move;
+import Fanorona.Move.MoveList;
+import Fanorona.mcts.RandomMctsPlayer;
+import Fanorona.mcts.RandomPlayerGameStateStatistic;
+import Fanorona.mcts.RandomPlayerGameStateStatistic2;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class Board_Test {
 
-    private final String BOARD_LARGE_PRINT_STRING = "White's turn\n" +
-            "  a   b   c   d   e   f   g   h   i\n" +
+    private final String BOARD_LARGE_PRINT_STRING = "  a   b   c   d   e   f   g   h   i\n" +
             "0 B - B - B - B - B - B - B - B - B\n" +
             "  | \\ | / | \\ | / | \\ | / | \\ | / |\n" +
             "1 B - B - B - B - B - B - B - B - B\n" +
@@ -22,8 +22,7 @@ public class Board_Test {
             "3 W - W - W - W - W - W - W - W - W\n" +
             "  | / | \\ | / | \\ | / | \\ | / | \\ |\n" +
             "4 W - W - W - W - W - W - W - W - W\n";
-    private final String BOARD_MEDIUM_PRINT_STRING = "White's turn\n" +
-            "  a   b   c   d   e\n" +
+    private final String BOARD_MEDIUM_PRINT_STRING = "  a   b   c   d   e\n" +
             "0 B - B - B - B - B\n" +
             "  | \\ | / | \\ | / |\n" +
             "1 B - B - B - B - B\n" +
@@ -33,16 +32,14 @@ public class Board_Test {
             "3 W - W - W - W - W\n" +
             "  | / | \\ | / | \\ |\n" +
             "4 W - W - W - W - W\n";
-    private final String BOARD_SMALL_PRINT_STRING = "White's turn\n" +
-            "  a   b   c\n" +
+    private final String BOARD_SMALL_PRINT_STRING = "  a   b   c\n" +
             "0 B - B - B\n" +
             "  | \\ | / |\n" +
             "1 W -   - B\n" +
             "  | / | \\ |\n" +
             "2 W - W - W\n";
 
-    private final String BOARD_EXAMPLE_STATE_1_PRINTSTRING = "Black's turn\n" +
-            "  a   b   c   d   e   f   g   h   i\n" +
+    private final String BOARD_EXAMPLE_STATE_1_PRINTSTRING = "  a   b   c   d   e   f   g   h   i\n" +
             "0   - B -   - B -   - B -   - B -  \n" +
             "  | \\ | / | \\ | / | \\ | / | \\ | / |\n" +
             "1 B -   -   -   -   - B -   -   - B\n" +
@@ -52,8 +49,7 @@ public class Board_Test {
             "3 W - W -   - B -   -   -   -   - W\n" +
             "  | / | \\ | / | \\ | / | \\ | / | \\ |\n" +
             "4 W - W -   -   -   -   -   - W -  \n";
-    private final String BOARD_EXAMPLE_STATE_2_PRINTSTRING = "Black's turn\n" +
-            "  a   b   c   d   e   f   g   h   i\n" +
+    private final String BOARD_EXAMPLE_STATE_2_PRINTSTRING = "  a   b   c   d   e   f   g   h   i\n" +
             "0 B - B - B - B - B - B -   - B - B\n" +
             "  | \\ | / | \\ | / | \\ | / | \\ | / |\n" +
             "1 B - B - B - B - B -   - B - B - B\n" +
@@ -67,55 +63,55 @@ public class Board_Test {
     @Test
     void boardPositionSmallBlack_success() {
         Board board = new Board(BoardSize.small);
-        assertEquals(2, board.getPosition(0, 0));
+        assertEquals(2, board.getState().getPosition(0, 0));
     }
 
     @Test
     void boardPositionSmallWhite_success() {
         Board board = new Board(BoardSize.small);
-        assertEquals(1, board.getPosition(2, 2));
+        assertEquals(1, board.getState().getPosition(2, 2));
     }
 
     @Test
     void boardPositionSmallNone_success() {
         Board board = new Board(BoardSize.small);
-        assertEquals(0, board.getPosition(1, 1));
+        assertEquals(0, board.getState().getPosition(1, 1));
     }
 
     @Test
     void boardPositionMediumBlack_success() {
         Board board = new Board(BoardSize.medium);
-        assertEquals(2, board.getPosition(0, 2));
+        assertEquals(2, board.getState().getPosition(0, 2));
     }
 
     @Test
     void boardPositionMediumWhite_success() {
         Board board = new Board(BoardSize.medium);
-        assertEquals(1, board.getPosition(1, 2));
+        assertEquals(1, board.getState().getPosition(1, 2));
     }
 
     @Test
     void boardPositionMediumNone_success() {
         Board board = new Board(BoardSize.medium);
-        assertEquals(0, board.getPosition(2, 2));
+        assertEquals(0, board.getState().getPosition(2, 2));
     }
 
     @Test
     void boardPositionLargeBlack_success() {
         Board board = new Board(BoardSize.large);
-        assertEquals(2, board.getPosition(0, 2));
+        assertEquals(2, board.getState().getPosition(0, 2));
     }
 
     @Test
     void boardPositionLargeWhite_success() {
         Board board = new Board(BoardSize.large);
-        assertEquals(1, board.getPosition(1, 2));
+        assertEquals(1, board.getState().getPosition(1, 2));
     }
 
     @Test
     void boardPositionLargeNone_success() {
         Board board = new Board(BoardSize.large);
-        assertEquals(0, board.getPosition(4, 2));
+        assertEquals(0, board.getState().getPosition(4, 2));
     }
 
     @Test
@@ -153,12 +149,37 @@ public class Board_Test {
     @Test
     void boardPossibleMovesExampleState1_success() {
         Board board = new Board(BoardSize.large, BoardStateExamples.EXAMPLE_STATE_1);
+        System.out.println(board.toPrintString());
         MoveList actualList = board.getPossibleMoves();
         String expected = "f1e0W, f1e0Wd1A, i1i0W, i1i0Wh1A, a2b2A, a2b2Ab1W, d3c3A, d3c3Ac4W, d3c3Ac4Wd4W, d3e4W, d3e4Wf3A, ";
         assertEquals(11, actualList.size());
         for (Move move : actualList) {
             assertTrue(expected.contains(move.toString()));
         }
+    }
+
+    @Test
+    void boardPossibleMovesExampleStateS64_1_success() {
+        Board board = Board.fromB64(BoardStateExamples.EXMPLE_STATE_S64_1, BoardSize.large);
+        board.applyMove(new Move("c3c2Ab2A"));
+        System.out.println(board.toPrintString());
+        System.out.println(board.getStateB64());
+        System.out.println(board.getPossibleMoves());
+    }
+
+    @Test
+    void TEST() {
+        Board board = Board.fromB64("QgQAABAEARAAAAEV", BoardSize.large);
+//        board.applyMove(new Move("c3c2Ab2A"));
+        RandomMctsPlayer player = new RandomMctsPlayer(board, 1, 15000, "TestAI", new RandomPlayerGameStateStatistic());
+        System.out.println(player.getNextMove());
+        MoveList possibleMoves = board.getPossibleMoves();
+        for (Move move : possibleMoves) {
+            System.out.println(move + " " + player.getStatistics(move));
+        }
+        System.out.println(board.toPrintString());
+        System.out.println(board.getStateB64());
+        System.out.println(board.getPossibleMoves());
     }
 
     /*
@@ -196,6 +217,7 @@ public class Board_Test {
         System.out.println(board.toPrintString());
         assertEquals(BoardStateExamples.APPROACH_AFTER_B64, board.getStateB64());
     }
+
     @Test
     public void boardApplyMoveWithdrawal_success() {
         Board board = Board.fromB64(BoardStateExamples.WITHDRAW_BEFORE_B64, BoardSize.large);
@@ -239,13 +261,5 @@ public class Board_Test {
         String actual = board.toPrintString();
         assertEquals(expected, actual);
     }
-
-    @Test
-    public void TEST() {
-        Board board = Board.fromB64(BoardStateExamples.WITHDRAW_BEFORE_B64, BoardSize.large);
-        System.out.println(board.toPrintString());
-    }
-
-
 
 }

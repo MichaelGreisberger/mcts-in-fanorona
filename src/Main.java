@@ -1,13 +1,13 @@
-import Fanorona.Board;
-import Fanorona.Move;
-import Fanorona.MoveList;
-import Fanorona.util.BoardSize;
+import Fanorona.Board.Board;
+import Fanorona.Game;
+import Fanorona.Move.Move;
+import Fanorona.Board.BoardSize;
+import Fanorona.Move.MoveList;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -21,8 +21,7 @@ public class Main {
 
         movesDict = getMovesDict();
         MoveList moves = board.getPossibleMoves();
-//        List<Move> moves = board.getPossibleMoves();
-        Random rand = new Random();
+
         BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
         String input;
         System.out.println("Welcome to Fanorona CLI!");
@@ -31,26 +30,24 @@ public class Main {
         try {
             input = reader.readLine();
             if (input.equals("p")) {
-                printGameInfoAndState();
-                while (true) {
-                    input = reader.readLine();
-                    if (input.equals("s")) {
-                        System.out.println(board.getStateB64());
-                    } else if (movesDict.containsKey(input)) {
-                        board.applyMove(movesDict.get(input));
-                        movesDict = getMovesDict();
-                        printGameInfoAndState();
-                    } else {
-                        System.out.println("unknown move: " + input);
-                    }
+//                Game game = new Game(System.in, System.out, new Board(BoardState.fromB64("woAAQgAAAAAAAgAAAg==", BoardSize.large)));
+                Game game = new Game(System.in, System.out, BoardSize.large);
+                game.initializePlayersFromConsole();
+                game.runGame();
+                System.out.println("Wanna try again? (y/n)");
+                while (true) {//(reader.readLine().startsWith("y")) {
+                    game.reset();
+                    game.runGame();
+//                    System.out.println("Wanna try again? (y/n)");
                 }
             } else if (input.equals("r")) {
+                System.out.println("Starting simulation: this simulation runs for one minute and prints details after it finishes.");
                 counter = 0;
+                Random rand = new Random();
                 int whiteWins = 0, blackWins = 0;
                 long millis = System.currentTimeMillis();
                 while (System.currentTimeMillis() < millis + 60000) {
                     int randMove = (int) (rand.nextDouble() * moves.size());
-//                    printGameInfoAndState();
                     try {
                         board.applyMove(moves.get(randMove));
                     } catch (IndexOutOfBoundsException e) {
@@ -60,54 +57,16 @@ public class Main {
                             blackWins++;
                         }
                         counter++;
-//                        System.out.println("player " + (board.getCurrentPlayer() ^ 3) + " won! this was the " + ++counter + " game after " + (System.currentTimeMillis() - millis) / 1000 + " seconds.");
-//                        printGameInfoAndState();
                         board = new Board(BoardSize.large);
                     }
                     moves = board.getPossibleMoves();
                 }
                 System.out.println("White wins " + whiteWins + " times, Black wins " + blackWins + " times. This makes a total of " + counter + " games.\n" +
-                        "White won " + ((double)whiteWins / counter * 100) + "% of al games.");
+                        "White won " + ((double)whiteWins / counter * 100) + "% of all games.");
             }
-//            printGameInfoAndState();
-
-
         } catch (IOException e) {
             e.printStackTrace();
         }
-
-
-//        Fanorona.Move move = new Fanorona.Move(1, 1, 2, 2, MoveType.approach);
-//        System.out.println(move);
-//
-//        Board board = new Board(BoardSize.small);
-//        System.out.printf(board.toPrintString());
-//        board = new Board(BoardSize.medium);
-//        System.out.printf(board.toPrintString());
-//        board = new Board(BoardSize.large);
-//        System.out.printf(board.toPrintString());
-//
-//        for (Fanorona.Move mo :
-//                board.getPossibleMoves()) {
-//            System.out.println(mo.toString());
-//        }
-//
-//        board = new Board(BoardSize.large, BoardStateExamples.PAPER_EXAMPLE_STATE);
-//////        System.out.println(board.toPrintString());
-//////        for (Fanorona.Move mo :
-//////                board.getPossibleMoves()) {
-//////            System.out.println(mo.toString());
-//////        }
-////
-////        board.setPosition(8,4,1);
-//        System.out.println(board.toPrintString());
-//        List<Fanorona.Move> movesDict = board.getPossibleMoves();
-//        for (Fanorona.Move mo : movesDict) {
-//            System.out.println(mo.toString());
-//        }
-//        board.applyMove(movesDict.get(0));
-//        System.out.println(board.toPrintString());
-
     }
 
     public static void printGameInfoAndState() {
@@ -128,7 +87,6 @@ public class Main {
     private static Map<String, Move> getMovesDict() {
         Map<String, Move> moves = new HashMap<>();
         MoveList possibleMoves = board.getPossibleMoves();
-//        List<Move> possibleMoves = board.getPossibleMoves();
         for (Move move : possibleMoves) {
             moves.put(move.toString(), move);
         }

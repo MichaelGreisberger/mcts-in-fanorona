@@ -1,4 +1,4 @@
-package Fanorona;
+package Fanorona.Move;
 
 import java.util.Iterator;
 
@@ -86,6 +86,15 @@ public class MoveList implements Iterable<Move> {
     @Override
     public Iterator iterator() {
         return new MoveListIterator(this);
+    }
+
+    @Override
+    public String toString() {
+        String s = "";
+        for(Move move : this) {
+            s += move + ", ";
+        }
+        return s;
     }
 }
 

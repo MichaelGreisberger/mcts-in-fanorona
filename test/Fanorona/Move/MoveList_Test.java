@@ -1,9 +1,7 @@
-package Fanorona;
+package Fanorona.Move;
 
-import Fanorona.Move;
-import Fanorona.MoveList;
+import Fanorona.Move.MoveList;
 import org.junit.jupiter.api.Test;
-import Fanorona.util.MoveType;
 
 import java.awt.*;
 import static org.junit.jupiter.api.Assertions.*;

@@ -1,4 +1,4 @@
-package Fanorona.util;
+package Fanorona.Board;
 
 public class BoardStateExamples {
 
@@ -44,6 +44,7 @@ s
      */
     public static final String EXAMPLE_STATE_2 = "\u0082ª\u008Aª\u008A¦Y\u0095EUUU";
 
+    public static final String EXMPLE_STATE_S64_1 = "QsKIwoooAcKgAABQBAQA";
 
     public static final String APPROACH_ACTION = "c2d3A";
     /*

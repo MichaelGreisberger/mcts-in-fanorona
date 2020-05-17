@@ -1,4 +1,4 @@
-package Fanorona.util;
+package Fanorona.Board;
 
 import java.awt.*;
 

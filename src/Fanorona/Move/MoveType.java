@@ -1,4 +1,4 @@
-package Fanorona.util;
+package Fanorona.Move;
 
 public enum MoveType {
     approach('A'),
