@@ -10,16 +10,17 @@ import java.util.Random;
 import java.util.Set;
 
 public class RandomMctsPlayer implements Player {
-    private final MctsGameStore gameStore;
-    private final int millisToRun;
-    private final String name;
+    private final MctsStateStorage STORE;
+    private final int MILLIS_TO_RUN;
+    private final String NAME;
+    private final Random RAND = new Random();
     private Board board;
     private int player;
     private MoveList possibleMoves;
 
     @Override
     public String getName() {
-        return name;
+        return NAME;
     }
 
     @Override
@@ -27,42 +28,46 @@ public class RandomMctsPlayer implements Player {
         this.board = board;
     }
 
-    Random rand = new Random();
 
     public RandomMctsPlayer(Board board, int player, int millisToRun, String name, GameStateStatistic statistic) {
-        this.gameStore = new MctsGameStore(statistic);
+        this.STORE = new MctsStateStorage(statistic);
         this.board = board;
         this.player = player;
-        this.millisToRun = millisToRun;
-        this.name = name;
+        this.MILLIS_TO_RUN = millisToRun;
+        this.NAME = name;
     }
 
     public RandomMctsPlayer(Board board, int player, int millisToRun, String name) {
-        this.gameStore = new MctsGameStore(new RandomPlayerGameStateStatistic());
+        this.STORE = new MctsStateStorage(new RandomPlayerGameStateStatistic());
         this.board = board;
         this.player = player;
-        this.millisToRun = millisToRun;
-        this.name = name;
+        this.MILLIS_TO_RUN = millisToRun;
+        this.NAME = name;
     }
 
     @Override
     public Move getNextMove() {
-        long millisStop = System.currentTimeMillis() + millisToRun;
-        possibleMoves = gameStore.getMoves(board);
+        long millisStop = System.currentTimeMillis() + MILLIS_TO_RUN;
+        possibleMoves = STORE.getMoves(board);
+        int counter = 0;
+        int stateCountbefore = STORE.getStateCount();
         while (System.currentTimeMillis() < millisStop) {
             simulateGame(possibleMoves);
+            counter++;
         }
-        return chooseNextMove();
+        System.out.println("Simulated " + counter + " games. Thats " + counter / MILLIS_TO_RUN * 1000 + " simulations per second. The Simulation is overdue for " + (System.currentTimeMillis() - millisStop) + " millis.");
+        System.out.println("We discovered " + (STORE.getStateCount() - stateCountbefore) + " new States. This means we now store " + STORE.getStateCount() + " states!");
+        return selectBestMove();
     }
 
-    private Move chooseNextMove() {
+    private Move selectBestMove() {
         double maxVal = -1;
         Move curBestMove = null;
         double curVal;
         for (Move move : possibleMoves) {
             Board board = this.board.getCopy();
             board.applyMove(move);
-            curVal = gameStore.getDecisionValue(board.getStateB64());
+            curVal = STORE.getDecisionValue(board.getStateB64());
             if (curVal > maxVal) {
                 maxVal = curVal;
                 curBestMove = move;
@@ -77,25 +82,13 @@ public class RandomMctsPlayer implements Player {
         while (moves.size() > 0) {
             states.add(board.getStateB64());
             board.applyMove(getRandomMove(moves));
-            moves = gameStore.getMoves(board);
+            moves = STORE.getMoves(board);
         }
         int winner = board.getCurrentPlayer() ^ 3;
         if (player == winner) {
-            saveWin(states);
+            STORE.addWin(states);
         } else {
-            saveLose(states);
-        }
-    }
-
-    private void saveLose(Iterable<String> states) {
-        for (String s : states) {
-            gameStore.addLose(s);
-        }
-    }
-
-    private void saveWin(Iterable<String> states) {
-        for (String s : states) {
-            gameStore.addWin(s);
+            STORE.addLose(states);
         }
     }
 
@@ -104,13 +97,13 @@ public class RandomMctsPlayer implements Player {
     }
 
     private int getBoundRand(int bound) {
-        return (int) (rand.nextDouble() * bound);
+        return (int) (RAND.nextDouble() * bound);
     }
 
     public GameStateStatistic getStatistics(Move move) {
         Board board = this.board.getCopy();
         board.applyMove(move);
-        return gameStore.getStatistics(board.getStateB64());
+        return STORE.getStatistics(board.getStateB64());
     }
 
 }
