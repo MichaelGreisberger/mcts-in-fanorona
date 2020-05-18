@@ -29,15 +29,31 @@ public class ConsolePlayer implements Player {
         this.board = board;
     }
 
+    @Override
+    public void reset() {
+        initNameFromConsole();
+    }
+
+    //TODO: Delete this!
+    public void incWin(){
+
+    }
+
+    public int getWins() {
+        return 0;
+    }
 
     public ConsolePlayer(Board board, InputStream in, OutputStream out) {
         this.in = new Scanner(new InputStreamReader(in));
         this.out = new PrintWriter(new OutputStreamWriter(out), true);
         this.board = board;
+        initNameFromConsole();
+    }
+
+    private void initNameFromConsole() {
         this.out.println("Whats your Name?");
         this.name = this.in.nextLine().trim();
     }
-
     @Override
     public Move getNextMove() {
         while (true) {

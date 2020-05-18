@@ -171,7 +171,7 @@ public class Board_Test {
     void TEST() {
         Board board = Board.fromB64("QgQAABAEARAAAAEV", BoardSize.large);
 //        board.applyMove(new Move("c3c2Ab2A"));
-        RandomMctsPlayer player = new RandomMctsPlayer(board, 1, 15000, "TestAI", new RandomPlayerGameStateStatistic());
+        RandomMctsPlayer player = new RandomMctsPlayer(board,  5000, "TestAI", new RandomPlayerGameStateStatistic());
         System.out.println(player.getNextMove());
         MoveList possibleMoves = board.getPossibleMoves();
         for (Move move : possibleMoves) {
@@ -213,7 +213,7 @@ public class Board_Test {
         System.out.println(board.toPrintString());
         Move move = new Move(BoardStateExamples.APPROACH_ACTION);
         System.out.println(move);
-        board.applyMove(move);
+        board = board.applyMove(move);
         System.out.println(board.toPrintString());
         assertEquals(BoardStateExamples.APPROACH_AFTER_B64, board.getStateB64());
     }
@@ -224,7 +224,7 @@ public class Board_Test {
         System.out.println(board.toPrintString());
         Move move = new Move(BoardStateExamples.WITHDRAW_ACTION);
         System.out.println(move);
-        board.applyMove(move);
+        board = board.applyMove(move);
         System.out.println(board.toPrintString());
         assertEquals(BoardStateExamples.WITHDRAW_AFTER_B64, board.getStateB64());
     }
@@ -235,7 +235,7 @@ public class Board_Test {
         System.out.println(board.toPrintString());
         Move move = new Move(BoardStateExamples.EXTENDED_ACTION);
         System.out.println(move);
-        board.applyMove(move);
+        board = board.applyMove(move);
         System.out.println(board.toPrintString());
         assertEquals(BoardStateExamples.EXTENDED_AFTER_B64, board.getStateB64());
     }
@@ -246,7 +246,7 @@ public class Board_Test {
         System.out.println(board.toPrintString());
         Move move = new Move(BoardStateExamples.PAIKA_ACTION);
         System.out.println(move);
-        board.applyMove(move);
+        board = board.applyMove(move);
         System.out.println(board.toPrintString());
         assertEquals(BoardStateExamples.PAIKA_AFTER_B64, board.getStateB64());
     }

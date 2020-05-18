@@ -6,12 +6,15 @@ import java.util.Base64;
 public class BoardState implements Cloneable {
     private final int X_OFFSET = 3; //offset of positions (1 position = 2bits) previous to board-state-data (same for all sizes)
     private BoardSize size;
-    private char[] cState;
 
+    public char[] getcState() {
+        return cState;
+    }
+
+    private char[] cState;
     public BoardSize getSize() {
         return size;
     }
-
 
     public BoardState(BoardSize size, char[] state) {
         this.size = size;
@@ -21,20 +24,6 @@ public class BoardState implements Cloneable {
     public BoardState(BoardSize size) {
         this.size = size;
         this.cState = getInitialState(size).toCharArray();
-    }
-
-    /**
-     * Returns the value of the board state at the specified position
-     *
-     * @param x x coordinate of the position for which to return the current board state
-     * @param y x coordinate of the  position for which to return the current board state
-     * @return Returns the value of the board state at the specified position
-     */
-    int getPosition(int x, int y) {
-        double temp = (double) (x + X_OFFSET + y * size.x()) / 4;
-        int position = (int) temp;
-        int shift = (int) ((0.75 - (temp - (int) temp)) * 8);
-        return (cState[position] >> shift) & 3;
     }
 
     /**
@@ -105,6 +94,20 @@ public class BoardState implements Cloneable {
      */
     public int getPosition(Point position) {
         return getPosition(position.x, position.y);
+    }
+
+    /**
+     * Returns the value of the board state at the specified position
+     *
+     * @param x x coordinate of the position for which to return the current board state
+     * @param y x coordinate of the  position for which to return the current board state
+     * @return Returns the value of the board state at the specified position
+     */
+    int getPosition(int x, int y) {
+        double temp = (double) (x + X_OFFSET + y * size.x()) / 4;
+        int position = (int) temp;
+        int shift = (int) ((0.75 - (temp - (int) temp)) * 8);
+        return (cState[position] >> shift) & 3;
     }
 
     /**

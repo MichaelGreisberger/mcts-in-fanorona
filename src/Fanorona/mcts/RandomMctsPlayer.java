@@ -10,13 +10,22 @@ import java.util.Random;
 import java.util.Set;
 
 public class RandomMctsPlayer implements Player {
-    private final MctsStateStorage STORE;
     private final int MILLIS_TO_RUN;
     private final String NAME;
     private final Random RAND = new Random();
+    private MctsStateStorage storage;
     private Board board;
-    private int player;
     private MoveList possibleMoves;
+    private boolean verbose = true;
+
+    //TODO: Delete this!
+    private int wins = 0;
+    public void incWin() {
+        wins++;
+    }
+    public int getWins() {
+        return wins;
+    }
 
     @Override
     public String getName() {
@@ -28,19 +37,22 @@ public class RandomMctsPlayer implements Player {
         this.board = board;
     }
 
+    @Override
+    public void reset() {
+        storage.reset();
+    }
 
-    public RandomMctsPlayer(Board board, int player, int millisToRun, String name, GameStateStatistic statistic) {
-        this.STORE = new MctsStateStorage(statistic);
+
+    public RandomMctsPlayer(Board board, int millisToRun, String name, GameStateStatistic statistic) {
+        this.storage = new MctsStateStorage(statistic);
         this.board = board;
-        this.player = player;
         this.MILLIS_TO_RUN = millisToRun;
         this.NAME = name;
     }
 
-    public RandomMctsPlayer(Board board, int player, int millisToRun, String name) {
-        this.STORE = new MctsStateStorage(new RandomPlayerGameStateStatistic());
+    public RandomMctsPlayer(Board board, int millisToRun, String name) {
+        this.storage = new MctsStateStorage(new RandomPlayerGameStateStatistic());
         this.board = board;
-        this.player = player;
         this.MILLIS_TO_RUN = millisToRun;
         this.NAME = name;
     }
@@ -48,15 +60,20 @@ public class RandomMctsPlayer implements Player {
     @Override
     public Move getNextMove() {
         long millisStop = System.currentTimeMillis() + MILLIS_TO_RUN;
-        possibleMoves = STORE.getMoves(board);
+        possibleMoves = board.getPossibleMoves();
         int counter = 0;
-        int stateCountbefore = STORE.getStateCount();
+        int stateCountbefore = storage.getStateCount();
         while (System.currentTimeMillis() < millisStop) {
-            simulateGame(possibleMoves);
+            simulateGame(possibleMoves, board.getCurrentPlayer());
             counter++;
         }
-        System.out.println("Simulated " + counter + " games. Thats " + counter / MILLIS_TO_RUN * 1000 + " simulations per second. The Simulation is overdue for " + (System.currentTimeMillis() - millisStop) + " millis.");
-        System.out.println("We discovered " + (STORE.getStateCount() - stateCountbefore) + " new States. This means we now store " + STORE.getStateCount() + " states!");
+        if (verbose) {
+            System.out.println("Simulated " + counter + " games. Thats " + counter / MILLIS_TO_RUN * 1000 + " simulations per second. The Simulation is overdue for " + (System.currentTimeMillis() - millisStop) + " millis.");
+            System.out.println("We discovered " + (storage.getStateCount() - stateCountbefore) + " new States. This means we now store " + storage.getStateCount() + " states!");
+            for (Move move : possibleMoves) {
+                System.out.println(move.toString() + " " + getStatistics(move));
+            }
+        }
         return selectBestMove();
     }
 
@@ -65,9 +82,8 @@ public class RandomMctsPlayer implements Player {
         Move curBestMove = null;
         double curVal;
         for (Move move : possibleMoves) {
-            Board board = this.board.getCopy();
-            board.applyMove(move);
-            curVal = STORE.getDecisionValue(board.getStateB64());
+            Board board = this.board.applyMove(move);
+            curVal = storage.getDecisionValue(board.getStateB64());
             if (curVal > maxVal) {
                 maxVal = curVal;
                 curBestMove = move;
@@ -76,19 +92,26 @@ public class RandomMctsPlayer implements Player {
         return curBestMove;
     }
 
-    private void simulateGame(MoveList moves) {
+    private void simulateGame(MoveList moves, int player) {
         Board board = this.board.getCopy();
         Set<String> states = new HashSet<>();
+        boolean store = true;
+
         while (moves.size() > 0) {
-            states.add(board.getStateB64());
-            board.applyMove(getRandomMove(moves));
-            moves = STORE.getMoves(board);
+            board = board.applyMove(getRandomMove(moves));
+            if (store) {
+                states.add(board.getStateB64());
+                store = false;
+            } else {
+                store = true;
+            }
+            moves = board.getPossibleMoves();
         }
         int winner = board.getCurrentPlayer() ^ 3;
         if (player == winner) {
-            STORE.addWin(states);
+            storage.addWin(states);
         } else {
-            STORE.addLose(states);
+            storage.addLose(states);
         }
     }
 
@@ -101,9 +124,8 @@ public class RandomMctsPlayer implements Player {
     }
 
     public GameStateStatistic getStatistics(Move move) {
-        Board board = this.board.getCopy();
-        board.applyMove(move);
-        return STORE.getStatistics(board.getStateB64());
+        Board board = this.board.applyMove(move);
+        return storage.getStatistics(board.getStateB64());
     }
 
 }

@@ -49,7 +49,7 @@ public class Main {
                 while (System.currentTimeMillis() < millis + 60000) {
                     int randMove = (int) (rand.nextDouble() * moves.size());
                     try {
-                        board.applyMove(moves.get(randMove));
+                        board = board.applyMove(moves.get(randMove));
                     } catch (IndexOutOfBoundsException e) {
                         if ((board.getCurrentPlayer() ^ 3) == 1) {
                             whiteWins++;
