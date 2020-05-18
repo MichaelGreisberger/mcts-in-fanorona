@@ -17,9 +17,9 @@ public class RandomPlayerGameStateStatistic implements GameStateStatistic {
     @Override
     public double getDecisionValue() {
         if (wonGames == 0) {
-            return 0;
+            return Double.MIN_VALUE;
         } else if (lostGames == 0) {
-            return wonGames;
+            return Double.MAX_VALUE;
         } else {
             return (double) wonGames / lostGames;
         }
