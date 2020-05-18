@@ -36,7 +36,6 @@ public class Board {
         this.state = state;
     }
 
-
     /**
      * Searches for all possible extended capture moves from the previous move
      *
@@ -83,11 +82,6 @@ public class Board {
      * @return All possible moves for the current state of the Board according to the rules.
      */
     public MoveList getPossibleMoves() {
-//        String s64 = getStateB64();
-//        if (!store.containsKey(s64)) {
-//            store.put(getStateB64(),calculatePossibleMoves());
-//        }
-//        return store.get(s64);
         return calculatePossibleMoves();
     }
 
@@ -127,22 +121,24 @@ public class Board {
     }
 
     /**
-     * Executes the given move. Moves the piece and captures all enemy pieces.
+     * Executes the given move and returns the resulting board.
      * This method can execute all types of moves (approach, withdrawal, paika, extended capturing)
-     *
+     * Execution contains all steps of the according move (moving the player piece, capturing the opponent pieces)
+     * After execution the turn is completed and the opponent is next.
      * @param move the move to execute
+     * @return A board instance with the applied move and switched current player
      */
-    public void applyMove(Move move) {
-        s64 = null;
+    public Board applyMove(Move move) {
+        Board board = getCopy();
         MoveType[] types = move.getTypes();
         Point[] nodes = move.getNodes();
         int player = state.getCurrentPlayer();
         int opponent = player ^ 3;
-
         for (int i = 1; i < nodes.length; i++) {
-            move(nodes[i - 1], nodes[i], types[i - 1], player, opponent);
+            board.move(nodes[i - 1], nodes[i], types[i - 1], player, opponent);
         }
-        state.setCurrentPlayer(opponent);
+        board.state.setCurrentPlayer(opponent);
+        return board;
     }
 
     /**
