@@ -6,17 +6,18 @@ import Fanorona.Move.MoveType;
 
 import java.awt.*;
 import java.util.Base64;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
+/**
+ * The class {@code Board} represents the board of Fanorona. It can represent all sizes defined in the class {@code BoardSize}
+ * It provides method's to determine possible moves and apply certain moves.
+ */
 public class Board {
-//    private static Map<String, MoveList> store = new HashMap<>();
     private BoardState state;
     private String s64;
 
-    public BoardState getState() {
+    BoardState getState() {
         return state;
     }
 
@@ -44,7 +45,7 @@ public class Board {
      * @param opponent the current opponent
      * @return all possible extended capture moves to the previous move
      */
-    public MoveList getExtendedCaptureMoves(Move prevMove, int player, int opponent) {
+    private MoveList getExtendedCaptureMoves(Move prevMove, int player, int opponent) {
         Board newBoard = new Board(state.getCopy());
         MoveList newMoves = new MoveList();
         Point currentPosition = prevMove.getLastToPosition();
@@ -54,11 +55,11 @@ public class Board {
 
         for (Point emptyNeighbour : newBoard.getEmptyNeighbours(currentPosition.x, currentPosition.y)) {
             if (isOpponentInDirection(currentPosition, emptyNeighbour, opponent)) {
-                newMove = prevMove.extendCapture(emptyNeighbour, MoveType.approach);
+                newMove = prevMove.extendCapture(emptyNeighbour, MoveType.APPROACH);
                 if (newMove.appliesToRules()) newMoves.append(newMove);
             }
             if (isOpponentAgainstDirection(currentPosition, emptyNeighbour, opponent)) {
-                newMove = prevMove.extendCapture(emptyNeighbour, MoveType.withdraw);
+                newMove = prevMove.extendCapture(emptyNeighbour, MoveType.WITHDRAW);
                 if (newMove.appliesToRules()) newMoves.append(newMove);
             }
         }
@@ -82,32 +83,28 @@ public class Board {
      * @return All possible moves for the current state of the Board according to the rules.
      */
     public MoveList getPossibleMoves() {
-        return calculatePossibleMoves();
-    }
-
-    private MoveList calculatePossibleMoves() {
         int currPlayer = state.getCurrentPlayer();
         int opponent = currPlayer ^ 3;
         MoveList paikaMoves = new MoveList();
         MoveList captureMoves = new MoveList();
-        for (int y = 0; y < state.getSize().y(); y++) {
-            for (int x = 0; x < state.getSize().x(); x++) {
-                Point position = new Point(x,y);
+        for (int x = 0; x < state.getSize().x(); x++) {
+            for (int y = 0; y < state.getSize().y(); y++) {
+                Point position = new Point(x, y);
                 if (state.getPosition(position) == currPlayer) {
                     List<Point> neighbours = getEmptyNeighbours(x, y);
                     for (Point neighbour : neighbours) {
                         if (isOpponentInDirection(position, neighbour, opponent)) {
-                            Move move = new Move(position, neighbour, MoveType.approach);
+                            Move move = new Move(position, neighbour, MoveType.APPROACH);
                             captureMoves.append(move);
                             captureMoves.append(getExtendedCaptureMoves(move, currPlayer, opponent));
                         }
                         if (isOpponentAgainstDirection(position, neighbour, opponent)) {
-                            Move move = new Move(position, neighbour, MoveType.withdraw);
+                            Move move = new Move(position, neighbour, MoveType.WITHDRAW);
                             captureMoves.append(move);
                             captureMoves.append(getExtendedCaptureMoves(move, currPlayer, opponent));
                         }
                         if (captureMoves.isEmpty()) {
-                            paikaMoves.append(new Move(position, neighbour, MoveType.paika));
+                            paikaMoves.append(new Move(position, neighbour, MoveType.PAIKA));
                         }
                     }
                 }
@@ -125,6 +122,7 @@ public class Board {
      * This method can execute all types of moves (approach, withdrawal, paika, extended capturing)
      * Execution contains all steps of the according move (moving the player piece, capturing the opponent pieces)
      * After execution the turn is completed and the opponent is next.
+     *
      * @param move the move to execute
      * @return A board instance with the applied move and switched current player
      */
@@ -154,12 +152,12 @@ public class Board {
         int dirX;
         int dirY;
         switch (type) {
-            case approach:
+            case APPROACH:
                 dirX = to.x - from.x;
                 dirY = to.y - from.y;
                 capture(to.x + dirX, to.y + dirY, dirX, dirY, opponent);
                 break;
-            case withdraw:
+            case WITHDRAW:
                 dirX = from.x - to.x;
                 dirY = from.y - to.y;
                 capture(to.x + dirX, to.y + dirY, dirX, dirY, opponent);
@@ -182,8 +180,8 @@ public class Board {
      * @param dirY     y direction to look for more opponent pieces to capture
      * @param opponent pieces to capture
      */
-    public void capture(int x, int y, int dirX, int dirY, int opponent) {
-        capture(new Point(x,y), dirX, dirY, opponent);
+    private void capture(int x, int y, int dirX, int dirY, int opponent) {
+        capture(new Point(x, y), dirX, dirY, opponent);
     }
 
     /**
@@ -236,8 +234,8 @@ public class Board {
     /**
      * Evaluated whether there is an opponent piece at the specified position.
      *
-     * @param x     x coordinate of position to check
-     * @param y     y coordinate of position to check
+     * @param x        x coordinate of position to check
+     * @param y        y coordinate of position to check
      * @param opponent opponent player
      * @return true if there is an opponent piece at the position {@param node}
      */
@@ -257,7 +255,7 @@ public class Board {
      * @param y y coordinate of the position for which to search empty neighbours
      * @return all empty neighbours of the specified position
      */
-    public List<Point> getEmptyNeighbours(int x, int y) {
+    private List<Point> getEmptyNeighbours(int x, int y) {
         List<Point> neighbours = new LinkedList<>();
         for (Point point : getSurroundingNodes(x, y)) {
             if (state.getPosition(point.x, point.y) == 0) {
@@ -275,7 +273,7 @@ public class Board {
      * @param y y coordinate of the position for which to search all neighbours
      * @return all neighbours of the specified position
      */
-    public List<Point> getSurroundingNodes(int x, int y) {
+    private List<Point> getSurroundingNodes(int x, int y) {
         if (isStrongNode(x, y)) {
             return getEightNeighbours(x, y);
         } else {
@@ -360,7 +358,7 @@ public class Board {
      *
      * @param s64  A string representation of the desired board state in Base64 encoding
      * @param size The size of the desired board
-     * @returnthe board initialized with the state specified by the Base64 encoded string s64
+     * @return the board initialized with the state specified by the Base64 encoded string s64
      */
     public static Board fromB64(String s64, BoardSize size) {
         Base64.Decoder decoder = Base64.getDecoder();
@@ -368,7 +366,9 @@ public class Board {
         return new Board(size, new String(bState).toCharArray());
     }
 
-
+    /**
+     * @return the state of this board encoded as Base64 string
+     */
     public String getStateB64() {
         if (s64 == null) {
             s64 = state.getStateB64();
@@ -376,15 +376,24 @@ public class Board {
         return s64;
     }
 
+    /**
+     * @return the current player (1 == white, 2 == black)
+     */
     public int getCurrentPlayer() {
         return state.getCurrentPlayer();
     }
 
+    /**
+     * @return a human readable string representation of this board
+     */
     public String toPrintString() {
         return state.toPrintString();
     }
 
-    public Board getCopy() {
+    /**
+     * @return a deep-cloned copy of this board
+     */
+    private Board getCopy() {
         return new Board(state.getCopy());
     }
 }

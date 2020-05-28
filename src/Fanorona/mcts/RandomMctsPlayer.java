@@ -9,81 +9,50 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
+/**
+ * This is a simple implementation of a mcts agent for Fanorona. During the simulation the agent does not use heuristics
+ * to select moves. Instead, the next move is randomly selected during the simulation. After a specified time, the simulation
+ * is stopped and the move with the highest reward is selected (defined by the statistics used)
+ */
 public class RandomMctsPlayer implements Player {
     private final int MILLIS_TO_RUN;
-    private final String NAME;
-    private final Random RAND = new Random();
+    private final Random RAND;
     private MctsStateStorage storage;
-    private Board board;
-    private MoveList possibleMoves;
-    private boolean verbose = true;
+    private boolean verbose;
 
-    //TODO: Delete this!
-    private int wins = 0;
-    public void incWin() {
-        wins++;
-    }
-    public int getWins() {
-        return wins;
-    }
-
-    @Override
-    public String getName() {
-        return NAME;
-    }
-
-    @Override
-    public void setBoard(Board board) {
-        this.board = board;
-    }
-
-    @Override
-    public void reset() {
-        storage.reset();
-    }
-
-
-    public RandomMctsPlayer(Board board, int millisToRun, String name, GameStateStatistic statistic) {
-        this.storage = new MctsStateStorage(statistic);
-        this.board = board;
+    public RandomMctsPlayer(int millisToRun, boolean verbose) {
+        this.storage = new MctsStateStorage(new GameStateStatisticImpl());
         this.MILLIS_TO_RUN = millisToRun;
-        this.NAME = name;
-    }
-
-    public RandomMctsPlayer(Board board, int millisToRun, String name) {
-        this.storage = new MctsStateStorage(new RandomPlayerGameStateStatistic());
-        this.board = board;
-        this.MILLIS_TO_RUN = millisToRun;
-        this.NAME = name;
+        this.verbose = verbose;
+        this.RAND = new Random();
     }
 
     @Override
-    public Move getNextMove() {
+    public Move getNextMove(Board board) {
         long millisStop = System.currentTimeMillis() + MILLIS_TO_RUN;
-        possibleMoves = board.getPossibleMoves();
+        MoveList possibleMoves = board.getPossibleMoves();
         int counter = 0;
         int stateCountbefore = storage.getStateCount();
         while (System.currentTimeMillis() < millisStop) {
-            simulateGame(possibleMoves, board.getCurrentPlayer());
+            simulateGame(board, possibleMoves);
             counter++;
         }
         if (verbose) {
             System.out.println("Simulated " + counter + " games. Thats " + counter / MILLIS_TO_RUN * 1000 + " simulations per second. The Simulation is overdue for " + (System.currentTimeMillis() - millisStop) + " millis.");
             System.out.println("We discovered " + (storage.getStateCount() - stateCountbefore) + " new States. This means we now store " + storage.getStateCount() + " states!");
             for (Move move : possibleMoves) {
-                System.out.println(move.toString() + " " + getStatistics(move));
+                System.out.println(move.toString() + " " + getStatistics(board, move));
             }
         }
-        return selectBestMove();
+        return selectBestMove(board, possibleMoves);
     }
 
-    private Move selectBestMove() {
+    private Move selectBestMove(Board board, MoveList possibleMoves) {
         double maxVal = -1;
         Move curBestMove = null;
         double curVal;
         for (Move move : possibleMoves) {
-            Board board = this.board.applyMove(move);
-            curVal = storage.getDecisionValue(board.getStateB64());
+            curVal = getStatistics(board, move).getReward();
             if (curVal > maxVal) {
                 maxVal = curVal;
                 curBestMove = move;
@@ -92,39 +61,67 @@ public class RandomMctsPlayer implements Player {
         return curBestMove;
     }
 
-    private void simulateGame(MoveList moves, int player) {
-        Board board = this.board.getCopy();
-        Set<String> states = new HashSet<>();
+    /**
+     * Simulates a random game starting with the position in {@code board}.
+     * The results of the simulation are stored for all visited states where the acting player is this agent.
+     */
+    private void simulateGame(Board board, MoveList possibleMoves) {
         boolean store = true;
+        int player = board.getCurrentPlayer();
+        MoveList moves = possibleMoves;
+        Set<String> states = new HashSet<>();
 
         while (moves.size() > 0) {
             board = board.applyMove(getRandomMove(moves));
             if (store) {
-                states.add(board.getStateB64());
+                if (!states.add(board.getStateB64())) {
+                    break; //draw
+                }
                 store = false;
             } else {
                 store = true;
             }
             moves = board.getPossibleMoves();
         }
-        int winner = board.getCurrentPlayer() ^ 3;
-        if (player == winner) {
-            storage.addWin(states);
+
+        if (moves.size() > 0) {
+            storage.addDraw(states);
         } else {
-            storage.addLose(states);
+            int winner = board.getCurrentPlayer() ^ 3;
+            if (player == winner) {
+                storage.addWin(states);
+            } else {
+                storage.addLose(states);
+            }
         }
     }
 
+    /**
+     * @param moves moves from which to choose one at random
+     * @return a move selected from {@param moves} at random
+     */
     private Move getRandomMove(MoveList moves) {
         return moves.get(getBoundRand(moves.size()));
     }
 
+    /**
+     * @param bound upper bound of the random value
+     * @return a random value between 0 (inclusive) and bound (exclusive)
+     */
     private int getBoundRand(int bound) {
-        return (int) (RAND.nextDouble() * bound);
+        return (int) ((RAND.nextDouble() - Double.MIN_VALUE) * bound);
     }
 
-    public GameStateStatistic getStatistics(Move move) {
-        Board board = this.board.applyMove(move);
+
+    /**
+     * Retrieves the statistics for the board resulting after {@param move} is applied to {@param board}
+     *
+     * @param board board to which {@param move} is applied
+     * @param move  move to apply to {@param board}
+     * @return the game statistics for the board resulting after {@param move} is applied to {@param board}
+     */
+    private GameStateStatistic getStatistics(Board board, Move move) {
+        board = board.applyMove(move);
         return storage.getStatistics(board.getStateB64());
     }
 

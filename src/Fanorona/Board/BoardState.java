@@ -3,25 +3,34 @@ package Fanorona.Board;
 import java.awt.*;
 import java.util.Base64;
 
+/**
+ * This class represents the actual state of a Fanorona board and provides method's to retrieve or change it.
+ */
 public class BoardState implements Cloneable {
     private final int X_OFFSET = 3; //offset of positions (1 position = 2bits) previous to board-state-data (same for all sizes)
     private BoardSize size;
 
-    public char[] getcState() {
-        return cState;
-    }
-
+    /**
+     * cState is the actual storage for the board state. A character can store up to 4 nodes of the board.
+     * The first character in the array (index 0) represents the current player in the two most significant bits
+     * and the first field of the board in the two least significant bits. the 4 bits in the middle are (currently)
+     * unused. All other bits are used to represent the nodes of the board.
+     * This is true for all supported board sizes as it is true that (x * y * 2) % 8 == 2 where x * y represents the
+     * number of nodes for a specific board size. With * 2 we obtain the bits needed to represent the whole board.
+     * % 8 determines the number of bits in the first partly filled byte (char).
+     */
     private char[] cState;
+
     public BoardSize getSize() {
         return size;
     }
 
-    public BoardState(BoardSize size, char[] state) {
+    BoardState(BoardSize size, char[] state) {
         this.size = size;
         this.cState = state;
     }
 
-    public BoardState(BoardSize size) {
+    BoardState(BoardSize size) {
         this.size = size;
         this.cState = getInitialState(size).toCharArray();
     }
@@ -29,13 +38,13 @@ public class BoardState implements Cloneable {
     /**
      * @return the initial state of the current board
      */
-    String getInitialState(BoardSize size) {
+    private String getInitialState(BoardSize size) {
         switch (size) {
-            case small:
+            case SMALL:
                 return getInitialStateSmall();
-            case medium:
+            case MEDIUM:
                 return getInitialStateMedium();
-            case large:
+            case LARGE:
                 return getInitialStateLarge();
             default:
                 throw new IllegalArgumentException("Illegal boardsize: " + size);
@@ -57,7 +66,9 @@ public class BoardState implements Cloneable {
      * @param player current player for this board state.
      */
     void setCurrentPlayer(int player) {
-        int clearMask = ~(3 << 6); //ToDo: replace with actual value
+        int clearMask = -193; //0011111 ~(3 << 6)
+        //first deletes the current player (CPXXXXXX & 00111111) and shifts the new player's value to the correct position
+        //afterwards inserts the the new player (00XXXXXX | NP000000)
         cState[0] = (char) (cState[0] & clearMask | (player << 6));
     }
 
@@ -79,11 +90,17 @@ public class BoardState implements Cloneable {
      * @param newVal the new value of the position
      */
     private void setPosition(int x, int y, int newVal) {
-        double temp = (double) (x + X_OFFSET + y * size.x()) / 4;
-        int position = (int) temp;
-        int shift = (int) ((0.75 - (temp - (int) temp)) * 8);
+        //position of coordinates in array (integer part is index, floating point part represents the bits in char)
+        float position = (float) (x + X_OFFSET + y * size.x()) / 4;
+        int index = (int) position;
+        //number of shift's required to clear the relevant part of the char determined by index and to shift the new value
+        //to the same position as the old value.
+        //example: relevant char looks like 01001001 where every two bits represent a node. We want to change the second two
+        //bit from the right, 10, to 01. The floating point part of position is 0.5. Therefor (0.75 - 0.5) * 8 results in the
+        //two required shifts. clearMask therefor is 11110011 and newVal is 00000100
+        int shift = (int) (6 - (position - (int) position) * 8);
         int clearMask = ~(3 << shift);
-        cState[position] = (char) (cState[position] & clearMask | (newVal << shift));
+        cState[index] = (char) (cState[index] & clearMask | (newVal << shift));
     }
 
     /**
@@ -92,7 +109,7 @@ public class BoardState implements Cloneable {
      * @param position position for which to return the current board state
      * @return Returns the value of the board state at the specified position
      */
-    public int getPosition(Point position) {
+    int getPosition(Point position) {
         return getPosition(position.x, position.y);
     }
 
@@ -104,10 +121,12 @@ public class BoardState implements Cloneable {
      * @return Returns the value of the board state at the specified position
      */
     int getPosition(int x, int y) {
-        double temp = (double) (x + X_OFFSET + y * size.x()) / 4;
-        int position = (int) temp;
-        int shift = (int) ((0.75 - (temp - (int) temp)) * 8);
-        return (cState[position] >> shift) & 3;
+        //position of coordinates in array (integer part is index, floating point part represents the bits in char)
+        float position = (float) (x + X_OFFSET + y * size.x()) / 4;
+        int index = (int) position;
+        //number of shift's required to shift the relevant part of the char determined by index to the least significant two bits.
+        int shift = (int) (6 - (position - (int) position) * 8);
+        return (cState[index] >> shift) & 3;
     }
 
     /**
@@ -115,16 +134,15 @@ public class BoardState implements Cloneable {
      *
      * @return the current State encoded in a Base64 String
      */
-    public String getStateB64() {
+    String getStateB64() {
         return Base64.getEncoder().encodeToString(new String(cState).getBytes());
     }
 
     /**
      * @return a human readable string representation of the state of the current board.
      */
-    public String toPrintString() {
+    String toPrintString() {
         StringBuilder sb = new StringBuilder();
-//        sb.append(getCurrentPlayer() == 1 ? "White's turn\n" : "Black's turn\n");
         sb.append(getPrintHeader());
         int xlength = size.x() * 2 - 1; //x nodes, x-1 spaces in between
         int ylength = size.y() * 2 - 1;
@@ -134,7 +152,6 @@ public class BoardState implements Cloneable {
                 if (x % 2 == 0) {
                     if (y % 2 == 0) {
                         int pos = getPosition(x / 2, y / 2);
-//                        sb.append(pos == 0 ? " " : pos == 1 ? "\u25CF" : "\u25CB");
                         sb.append(pos == 0 ? " " : pos == 1 ? "W" : "B");
                     } else {
                         sb.append("|");
@@ -157,11 +174,11 @@ public class BoardState implements Cloneable {
      */
     private String getPrintHeader() {
         switch (size) {
-            case large:
+            case LARGE:
                 return "  a   b   c   d   e   f   g   h   i\n";
-            case medium:
+            case MEDIUM:
                 return "  a   b   c   d   e\n";
-            case small:
+            case SMALL:
                 return "  a   b   c\n";
             default:
                 return "Unknown Boardsize";
@@ -224,7 +241,7 @@ public class BoardState implements Cloneable {
         return state;
     }
 
-    public BoardState getCopy() {
+    BoardState getCopy() {
         try {
             return (BoardState) this.clone();
         } catch (CloneNotSupportedException e) {

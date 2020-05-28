@@ -1,5 +1,8 @@
 package Fanorona.Board;
 
+/**
+ * This class provides example states for testing purpose
+ */
 public class BoardStateExamples {
 
 
@@ -11,7 +14,7 @@ public class BoardStateExamples {
     000100101000100000
     000000000000000000
      */
-    public static final String PAPER_EXAMPLE_STATE = "@\u0000\u0000\n\u0019\u0080\u0000\u0001(\u0080\u0000\u0000";
+    static final String PAPER_EXAMPLE_STATE = "@\u0000\u0000\n\u0019\u0080\u0000\u0001(\u0080\u0000\u0000";
 
     /*
     Black's turn
@@ -26,7 +29,7 @@ public class BoardStateExamples {
   | / | \ | / | \ | / | \ | / | \ |
 4 W - W -   -   -   -   -   - W -
      */
-    public static final String EXAMPLE_STATE_1 = "\u0080\u0088\u0088\u0080 ¡\u0001\u0015 \u0005@\u0004";
+    static final String EXAMPLE_STATE_1 = "\u0080\u0088\u0088\u0080 ¡\u0001\u0015 \u0005@\u0004";
 
     /*
 Black's turn
@@ -42,11 +45,11 @@ Black's turn
 4 W - W - W - W - W - W - W - W - W
 s
      */
-    public static final String EXAMPLE_STATE_2 = "\u0082ª\u008Aª\u008A¦Y\u0095EUUU";
+    static final String EXAMPLE_STATE_2 = "\u0082ª\u008Aª\u008A¦Y\u0095EUUU";
 
     public static final String EXMPLE_STATE_S64_1 = "QsKIwoooAcKgAABQBAQA";
 
-    public static final String APPROACH_ACTION = "c2d3A";
+    static final String APPROACH_ACTION = "c2d3A";
     /*
 White's turn
   a   b   c   d   e   f   g   h   i
@@ -175,5 +178,18 @@ White's turn
      */
     public static final String EXTENDED_AFTER_B64  = "QMKIwqogworCiCDCkAREAFQ=";
 
-
+    /*
+    <><><><><><><><><><><><><><><><   AI's Turn (white)  ><><><><><><><><><><><><><><><><><><>
+  a   b   c   d   e   f   g   h   i
+0   - B -   - B - B - B -   -   -
+  | \ | / | \ | / | \ | / | \ | / |
+1 W -   -   -   -   -   -   -   -
+  | / | \ | / | \ | / | \ | / | \ |
+2   - B -   -   -   -   -   -   -
+  | \ | / | \ | / | \ | / | \ | / |
+3   -   -   -   - B -   -   - B -
+  | / | \ | / | \ | / | \ | / | \ |
+4   - W - W -   -   -   -   -   -
+     */
+    public static final String INTERESTING_CHOICE_B64  = "woDCisKAQAAIAAAIIFAA";
 }

@@ -1,9 +1,12 @@
 package Fanorona.Move;
 
+/**
+ * This class represents the types of moves in Fanrorona.
+ */
 public enum MoveType {
-    approach('A'),
-    withdraw('W'),
-    paika('P');
+    APPROACH('A'),
+    WITHDRAW('W'),
+    PAIKA('P');
 
     private final char type;
 
@@ -12,7 +15,7 @@ public enum MoveType {
     }
 
     @Override
-    public String toString(){
+    public String toString() {
         return "" + type;
     }
 }

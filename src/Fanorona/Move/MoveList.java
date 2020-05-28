@@ -1,7 +1,12 @@
 package Fanorona.Move;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Iterator;
 
+/**
+ * This class provides a simple data structure for handling a list of moves.
+ */
 public class MoveList implements Iterable<Move> {
     private MoveNode first;
     private MoveNode last;
@@ -10,19 +15,20 @@ public class MoveList implements Iterable<Move> {
     /**
      * @return the first move of this collection of moves
      */
-    public MoveNode getFirst() {
+    MoveNode getFirst() {
         return first;
     }
 
     /**
      * @return the last move of this collection of moves
      */
-    public MoveNode getLast() {
+    MoveNode getLast() {
         return last;
     }
 
     /**
      * Adds another move to the tail of this collection
+     *
      * @param move move to add
      */
     public void append(Move move) {
@@ -48,6 +54,7 @@ public class MoveList implements Iterable<Move> {
 
     /**
      * Adds a collection of moves to the tail of this collection
+     *
      * @param moves moves to add
      */
     public void append(MoveList moves) {
@@ -83,15 +90,16 @@ public class MoveList implements Iterable<Move> {
         return first == null;
     }
 
+    @NotNull
     @Override
-    public Iterator iterator() {
+    public Iterator<Move> iterator() {
         return new MoveListIterator(this);
     }
 
     @Override
     public String toString() {
         String s = "";
-        for(Move move : this) {
+        for (Move move : this) {
             s += move + ", ";
         }
         return s;
@@ -102,7 +110,7 @@ class MoveListIterator implements Iterator<Move> {
     private MoveList moves;
     private MoveNode curr;
 
-    public MoveListIterator(MoveList moves) {
+    MoveListIterator(MoveList moves) {
         this.moves = moves;
     }
 

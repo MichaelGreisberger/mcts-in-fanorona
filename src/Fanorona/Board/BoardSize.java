@@ -2,10 +2,13 @@ package Fanorona.Board;
 
 import java.awt.*;
 
+/**
+ * This class represents the size of a Fanrorona board. It contains a Textual description as well as the concrete sizes
+ */
 public enum BoardSize {
-    small (new Point(3,3)),
-    medium (new Point(5,5)),
-    large (new Point(9,5));
+    SMALL(new Point(3, 3)),
+    MEDIUM(new Point(5, 5)),
+    LARGE(new Point(9, 5));
 
     private Point point;
 

@@ -1,22 +1,21 @@
 package Fanorona.Move;
 
-import Fanorona.Move.MoveList;
 import org.junit.jupiter.api.Test;
 
 import java.awt.*;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class MoveList_Test {
+class MoveList_Test {
 
-    private final Move SIMPLE_MOVE = new Move(new Point(0,0), new Point(1,1), MoveType.approach);
-    private final Move SIMPLE_MOVE2 = new Move(new Point(1,1), new Point(2,2), MoveType.withdraw);
-    private final Move SIMPLE_MOVE3 = new Move(new Point(2,2), new Point(3,3), MoveType.paika);
-    private final Move SIMPLE_MOVE4 = new Move(new Point(3,3), new Point(4,4), MoveType.approach);
-    private final Move SIMPLE_MOVE5 = new Move(new Point(4,4), new Point(5,5), MoveType.withdraw);
-    private final Move SIMPLE_MOVE6 = new Move(new Point(5,5), new Point(6,6), MoveType.paika);
+    private final Move SIMPLE_MOVE = new Move(new Point(0,0), new Point(1,1), MoveType.APPROACH);
+    private final Move SIMPLE_MOVE2 = new Move(new Point(1,1), new Point(2,2), MoveType.WITHDRAW);
+    private final Move SIMPLE_MOVE3 = new Move(new Point(2,2), new Point(3,3), MoveType.PAIKA);
+    private final Move SIMPLE_MOVE4 = new Move(new Point(3,3), new Point(4,4), MoveType.APPROACH);
+    private final Move SIMPLE_MOVE5 = new Move(new Point(4,4), new Point(5,5), MoveType.WITHDRAW);
+    private final Move SIMPLE_MOVE6 = new Move(new Point(5,5), new Point(6,6), MoveType.PAIKA);
     private final String[] EXPECTED_STRINGS = new String[] {"a0b1A", "b1c2W", "c2d3P", "d3e4A", "e4f5W", "f5g6P"};
     @Test
-    public void appendSingleTest_succes() {
+    void appendSingleTest_succes() {
         MoveList moveList = new MoveList();
         moveList.append(SIMPLE_MOVE);
 
@@ -25,7 +24,7 @@ public class MoveList_Test {
     }
 
     @Test
-    public void appendMultipleTest_succes() {
+    void appendMultipleTest_succes() {
         MoveList moveList = new MoveList();
         moveList.append(SIMPLE_MOVE);
         moveList.append(SIMPLE_MOVE2);
@@ -38,7 +37,7 @@ public class MoveList_Test {
     }
 
     @Test
-    public void appendListTest_succes() {
+    void appendListTest_succes() {
         MoveList moveList = new MoveList();
         MoveList moveList2 = new MoveList();
 
@@ -59,7 +58,7 @@ public class MoveList_Test {
     }
 
     @Test
-    public void appendIteratorTest_succes() {
+    void appendIteratorTest_succes() {
         MoveList moveList = new MoveList();
 
         moveList.append(SIMPLE_MOVE);

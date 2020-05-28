@@ -6,12 +6,12 @@ import org.junit.jupiter.api.Test;
 import java.util.LinkedList;
 import java.util.List;
 
-public class MctsStateStorage_Test {
+class MctsStateStorage_Test {
 
     @Test
-    public void TestAddWin() {
-        MctsStateStorage store = new MctsStateStorage(new RandomPlayerGameStateStatistic());
-        RandomPlayerGameStateStatistic expected = new RandomPlayerGameStateStatistic();
+    void TestAddWin() {
+        MctsStateStorage store = new MctsStateStorage(new GameStateStatisticImpl());
+        GameStateStatisticImpl expected = new GameStateStatisticImpl();
         expected.incWon();
         store.addWin("123");
 
@@ -19,9 +19,9 @@ public class MctsStateStorage_Test {
     }
 
     @Test
-    public void TestAddLose() {
-        MctsStateStorage store = new MctsStateStorage(new RandomPlayerGameStateStatistic());
-        RandomPlayerGameStateStatistic expected = new RandomPlayerGameStateStatistic();
+    void TestAddLose() {
+        MctsStateStorage store = new MctsStateStorage(new GameStateStatisticImpl());
+        GameStateStatisticImpl expected = new GameStateStatisticImpl();
         expected.incLost();
         store.addLose("123");
 
@@ -29,9 +29,9 @@ public class MctsStateStorage_Test {
     }
 
     @Test
-    public void TestAddAllWin() {
-        MctsStateStorage store = new MctsStateStorage(new RandomPlayerGameStateStatistic());
-        RandomPlayerGameStateStatistic expected = new RandomPlayerGameStateStatistic();
+    void TestAddAllWin() {
+        MctsStateStorage store = new MctsStateStorage(new GameStateStatisticImpl());
+        GameStateStatisticImpl expected = new GameStateStatisticImpl();
 
         expected.incWon();
 
@@ -47,9 +47,9 @@ public class MctsStateStorage_Test {
     }
 
     @Test
-    public void TestAddAllLose() {
-        MctsStateStorage store = new MctsStateStorage(new RandomPlayerGameStateStatistic());
-        RandomPlayerGameStateStatistic expected = new RandomPlayerGameStateStatistic();
+    void TestAddAllLose() {
+        MctsStateStorage store = new MctsStateStorage(new GameStateStatisticImpl());
+        GameStateStatisticImpl expected = new GameStateStatisticImpl();
 
         expected.incLost();
 

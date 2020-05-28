@@ -11,57 +11,28 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.util.Scanner;
 
-public class ConsolePlayer implements Player {
-
-    private Board board;
-    private String name;
-
+/**
+ * This implementation of {@code Player} uses streams for communication. Those streams could connect to a console or
+ * another program.
+ */
+public class StreamPlayer implements Player {
     private Scanner in;
     private PrintWriter out;
 
-    @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public void setBoard(Board board) {
-        this.board = board;
-    }
-
-    @Override
-    public void reset() {
-        initNameFromConsole();
-    }
-
-    //TODO: Delete this!
-    public void incWin(){
-
-    }
-
-    public int getWins() {
-        return 0;
-    }
-
-    public ConsolePlayer(Board board, InputStream in, OutputStream out) {
+    public StreamPlayer(InputStream in, OutputStream out) {
         this.in = new Scanner(new InputStreamReader(in));
         this.out = new PrintWriter(new OutputStreamWriter(out), true);
-        this.board = board;
-        initNameFromConsole();
     }
 
-    private void initNameFromConsole() {
-        this.out.println("Whats your Name?");
-        this.name = this.in.nextLine().trim();
-    }
     @Override
-    public Move getNextMove() {
+    public Move getNextMove(Board board) {
         while (true) {
             out.println("Your next possible moves are:");
             MoveList possibleMoves = board.getPossibleMoves();
             out.println(possibleMoves);
             out.println("Select your move.");
-            String selectedMove = in.nextLine();
+            String selectedMove = in.nextLine().trim();
+            selectedMove = selectedMove.replace(",", "");
             for (Move move : possibleMoves) {
                 if (selectedMove.equals(move.toString())) {
                     return move;
@@ -70,4 +41,5 @@ public class ConsolePlayer implements Player {
             out.println("This was an illegal Move! :O Please select a legal move!\n");
         }
     }
+
 }
