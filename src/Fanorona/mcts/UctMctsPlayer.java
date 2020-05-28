@@ -18,9 +18,23 @@ import java.util.Set;
  * @see <a href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">www.wikipedia.org/wiki/Monte_Carlo_tree_search</a>
  */
 public class UctMctsPlayer implements Player {
+    /**
+     * This variable represents the exploration term Cp from the paper "A Survey of Monte Carlo Tree Search Methods"
+     *
+     * @see <a href="http://repository.essex.ac.uk/4117/1/MCTS-Survey.pdf">repository.essex.ac.uk/4117/1/MCTS-Survey.pdf</a>
+     */
     private static final double EXPLORATION_FACTOR = 1 / Math.sqrt(2); //Cp
-    private final MctsStateStorage storage;
+    /**
+     * how long may the simulation run before the next move must be selected.
+     */
     private final int MILLIS_TO_RUN;
+    /**
+     * Storage of GameStateStatistics to select best moves
+     */
+    private MctsStateStorage storage;
+    /**
+     * if true additional information is printed to System.out
+     */
     private boolean verbose;
 
     public UctMctsPlayer(int millisToRun, boolean verbose) {

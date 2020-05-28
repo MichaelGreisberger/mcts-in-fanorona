@@ -8,18 +8,20 @@ import java.util.Map;
  * the game theoretic value of a board state. This helps to choose the best action in a certain state.
  */
 class MctsStateStorage {
+    /**
+     * Stores statistics for simulated games. The key of this collection is the Base64-encoded state-string of the board
+     * for which the statistic is stored.
+     */
     private Map<String, GameStateStatistic> statisticStorage = new HashMap<>();
+    /**
+     * Prototype-Pattern
+     * This variable is used to initialize new statistics. This way all different kinds of Statistics can be uses. They
+     * only have to implement GameStateStatistic
+     */
     private GameStateStatistic proto;
 
     MctsStateStorage(GameStateStatistic prototype) {
         proto = prototype;
-    }
-
-    /**
-     * Resets this storage
-     */
-    void reset() {
-        this.statisticStorage = new HashMap<>();
     }
 
     /**

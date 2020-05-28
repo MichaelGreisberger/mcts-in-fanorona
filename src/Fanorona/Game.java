@@ -17,12 +17,36 @@ import java.util.Queue;
  * This is the class that is used to run the game. It initializes the players and "moderates" the game.
  */
 public class Game {
+    /**
+     * First player (always starts the game and plays the white pieces)
+     */
     private PlayerWrapper player1;
+
+    /**
+     * Second player (always plays the black pieces)
+     */
     private PlayerWrapper player2;
+
     private Board board;
+
+    /**
+     * If this is true, additional output is printed to System.out
+     */
     private boolean verbose = true;
+
+    /**
+     * Stores the last N states of this game (N = 20). Is used for draw-detection
+     */
     private Queue<String> recentStates = new LinkedList<>();
+
+    /**
+     * Stores the number of revisits of a certain boardstates. Is used for draw-detection
+     */
     private Map<String, Integer> revisitCounter = new HashMap<>();
+
+    /**
+     * Used to read data from the console
+     */
     private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
 
     /**

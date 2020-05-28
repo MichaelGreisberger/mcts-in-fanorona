@@ -15,7 +15,6 @@ import java.util.List;
  */
 public class Board {
     private BoardState state;
-    private String s64;
 
     BoardState getState() {
         return state;
@@ -370,10 +369,7 @@ public class Board {
      * @return the state of this board encoded as Base64 string
      */
     public String getStateB64() {
-        if (s64 == null) {
-            s64 = state.getStateB64();
-        }
-        return s64;
+        return state.getStateB64();
     }
 
     /**

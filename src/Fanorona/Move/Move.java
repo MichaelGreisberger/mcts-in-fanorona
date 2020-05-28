@@ -7,7 +7,14 @@ import java.awt.*;
  * to evaluate whether the move complies to the rules of the game and to conveniently access its properties.
  */
 public class Move {
+    /**
+     * nodes visited by this move (including the starting node)
+     */
     private final Point[] nodes;
+    /**
+     * type(s) of this move (Approach, Withdrawal, paika)
+     * This array is always one element shorter than nodes
+     */
     private final MoveType[] types;
 
     /**

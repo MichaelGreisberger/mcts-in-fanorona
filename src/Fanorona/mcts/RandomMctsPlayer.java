@@ -15,16 +15,35 @@ import java.util.Set;
  * is stopped and the move with the highest reward is selected (defined by the statistics used)
  */
 public class RandomMctsPlayer implements Player {
+    /**
+     * how long may the simulation run before the next move must be selected.
+     */
     private final int MILLIS_TO_RUN;
+    /**
+     * Random-generator for move-selection during simulation
+     */
     private final Random RAND;
+    /**
+     * Storage of GameStateStatistics to select best moves
+     */
     private MctsStateStorage storage;
+    /**
+     * if true additional information is printed to System.out
+     */
     private boolean verbose;
 
     public RandomMctsPlayer(int millisToRun, boolean verbose) {
+        this(millisToRun, verbose, new Random().nextLong());
+    }
+
+    public RandomMctsPlayer(int millisToRun, boolean verbose, long seed) {
         this.storage = new MctsStateStorage(new GameStateStatisticImpl());
         this.MILLIS_TO_RUN = millisToRun;
         this.verbose = verbose;
-        this.RAND = new Random();
+        this.RAND = new Random(seed);
+        if (verbose){
+            System.out.println("The seed for this RandomMctsPlayer is: " + seed);
+        }
     }
 
     @Override
@@ -111,7 +130,6 @@ public class RandomMctsPlayer implements Player {
     private int getBoundRand(int bound) {
         return (int) ((RAND.nextDouble() - Double.MIN_VALUE) * bound);
     }
-
 
     /**
      * Retrieves the statistics for the board resulting after {@param move} is applied to {@param board}
