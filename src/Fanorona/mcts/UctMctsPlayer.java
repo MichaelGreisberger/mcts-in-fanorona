@@ -3,7 +3,6 @@ package Fanorona.mcts;
 import Fanorona.Board.Board;
 import Fanorona.Move.Move;
 import Fanorona.Move.MoveList;
-import Fanorona.Player;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,30 +16,20 @@ import java.util.Set;
  *
  * @see <a href="https://en.wikipedia.org/wiki/Monte_Carlo_tree_search">www.wikipedia.org/wiki/Monte_Carlo_tree_search</a>
  */
-public class UctMctsPlayer implements Player {
+public class UctMctsPlayer extends MctsMachinePlayer {
     /**
      * This variable represents the exploration term Cp from the paper "A Survey of Monte Carlo Tree Search Methods"
      *
      * @see <a href="http://repository.essex.ac.uk/4117/1/MCTS-Survey.pdf">repository.essex.ac.uk/4117/1/MCTS-Survey.pdf</a>
      */
-    private static final double EXPLORATION_FACTOR = 1 / Math.sqrt(2); //Cp
-    /**
-     * how long may the simulation run before the next move must be selected.
-     */
-    private final int MILLIS_TO_RUN;
-    /**
-     * Storage of GameStateStatistics to select best moves
-     */
-    private MctsStateStorage storage;
-    /**
-     * if true additional information is printed to System.out
-     */
-    private boolean verbose;
+    private final double EXPLORATION_FACTOR;//= 1 / Math.sqrt(2); //Cp
 
+    public UctMctsPlayer(int millisToRun, boolean verbose, double explorationFactor) {
+        super(millisToRun, verbose, new MctsStateStorage(new GameStateStatisticImpl()));
+        EXPLORATION_FACTOR = explorationFactor;
+    }
     public UctMctsPlayer(int millisToRun, boolean verbose) {
-        this.storage = new MctsStateStorage(new GameStateStatisticImpl());
-        this.MILLIS_TO_RUN = millisToRun;
-        this.verbose = verbose;
+        this(millisToRun, verbose, 1 / Math.sqrt(2));
     }
 
     @Override
@@ -53,28 +42,8 @@ public class UctMctsPlayer implements Player {
             simulateGame(board, board.getCurrentPlayer());
             counter++;
         }
-        if (verbose) {
-            System.out.println("Simulated " + counter + " games. Thats " + counter / MILLIS_TO_RUN * 1000 + " simulations per second. The Simulation is overdue for " + (System.currentTimeMillis() - millisStop) + " millis.");
-            System.out.println("We discovered " + (storage.getStateCount() - stateCountPrev) + " new States. This means we now store " + storage.getStateCount() + " states!");
-            for (Move move : possibleMoves) {
-                System.out.println(move.toString() + " " + getStatistics(board, move));
-            }
-        }
+        printVerbosityMsg(board, possibleMoves, counter, stateCountPrev);
         return selectBestMove(board, possibleMoves);
-    }
-
-    private Move selectBestMove(Board board, MoveList possibleMoves) {
-        double maxReward = -1;
-        Move bestMove = null;
-        double curVal;
-        for (Move move : possibleMoves) {
-            curVal = getStatistics(board, move).getReward();
-            if (curVal > maxReward) {
-                maxReward = curVal;
-                bestMove = move;
-            }
-        }
-        return bestMove;
     }
 
     /**
@@ -171,9 +140,8 @@ public class UctMctsPlayer implements Player {
      * @param move  move to applie to {@param board}
      * @return the GameStateStatistic associated to the board state that results after applying {@param move} to {@param board}
      */
-    private GameStateStatistic getStatistics(Board board, Move move) {
+    protected GameStateStatistic getStatistics(Board board, Move move) {
         board = board.applyMove(move);
         return storage.getStatistics(board.getStateB64());
     }
-
 }
