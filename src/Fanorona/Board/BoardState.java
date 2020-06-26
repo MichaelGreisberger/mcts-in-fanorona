@@ -189,11 +189,11 @@ public class BoardState implements Cloneable {
      * @return returns the initial state of a small board
      */
     private String getInitialStateSmall() {
-        return "B¤\u0095";
+        return "B¨U";
         /*
         01000010
-        10100100
-        10010101
+        10101000
+        01010101
          */
     }
 

@@ -116,7 +116,9 @@ class MoveListIterator implements Iterator<Move> {
 
     @Override
     public boolean hasNext() {
-        if (curr == null) {
+        if (moves.isEmpty()) {
+            return false;
+        } else if (curr == null) {
             return true;
         } else {
             return curr.next != null;

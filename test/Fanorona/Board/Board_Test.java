@@ -32,7 +32,7 @@ class Board_Test {
     private final String BOARD_SMALL_PRINT_STRING = "  a   b   c\n" +
             "0 B - B - B\n" +
             "  | \\ | / |\n" +
-            "1 W -   - B\n" +
+            "1 B -   - W\n" +
             "  | / | \\ |\n" +
             "2 W - W - W\n";
 

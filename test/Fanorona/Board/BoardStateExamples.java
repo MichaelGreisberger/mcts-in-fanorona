@@ -5,7 +5,7 @@ package Fanorona.Board;
  */
 public class BoardStateExamples {
 
-
+    static final String FourThreeDrawExample = "QABAAAIAFCAAIABA";
     /*
     010000
     000000000000000000
