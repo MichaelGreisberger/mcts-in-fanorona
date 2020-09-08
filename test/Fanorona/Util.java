@@ -1,12 +1,16 @@
 package Fanorona;
 
 import Fanorona.Board.BoardSize;
-import Fanorona.mcts.RandomMctsPlayer;
+import Fanorona.Player.PlayerWrapper;
+import Fanorona.Player.RandomMctsPlayer;
+
+import java.io.IOException;
+import java.util.LinkedList;
 
 public class Util {
 
-    public static String getRandomLegalState(int rounds, BoardSize size) {
-        Game game = new Game(size, false);
+    public static String getRandomLegalState(int rounds, BoardSize size) throws IOException {
+        Game game = new Game(size, false, new LinkedList<>(), false);
         game.player1 = new PlayerWrapper(new  RandomMctsPlayer(0, false), "r1", "white");
         game.player2 = new PlayerWrapper(new  RandomMctsPlayer(0, false), "r2", "black");
 

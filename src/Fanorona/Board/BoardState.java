@@ -109,7 +109,7 @@ public class BoardState implements Cloneable {
      * @param position position for which to return the current board state
      * @return Returns the value of the board state at the specified position
      */
-    int getPosition(Point position) {
+    public int getPosition(Point position) {
         return getPosition(position.x, position.y);
     }
 
@@ -250,4 +250,7 @@ public class BoardState implements Cloneable {
         }
     }
 
+    public void reset() {
+        cState = getInitialState(size).toCharArray();
+    }
 }

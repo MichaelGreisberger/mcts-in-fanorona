@@ -7,7 +7,7 @@ import java.util.Map;
  * This class is used to store statistics for certain board states so that computer players can calculate, store and retrieve
  * the game theoretic value of a board state. This helps to choose the best action in a certain state.
  */
-class MctsStateStorage {
+public class MctsStateStorage {
     /**
      * Stores statistics for simulated games. The key of this collection is the Base64-encoded state-string of the board
      * for which the statistic is stored.
@@ -20,7 +20,7 @@ class MctsStateStorage {
      */
     private GameStateStatistic proto;
 
-    MctsStateStorage(GameStateStatistic prototype) {
+    public MctsStateStorage(GameStateStatistic prototype) {
         proto = prototype;
     }
 
@@ -29,7 +29,7 @@ class MctsStateStorage {
      *
      * @param states states for which to increment the win-counter
      */
-    void addWin(Iterable<String> states) {
+    public void addWin(Iterable<String> states) {
         states.forEach(this::addWin);
     }
 
@@ -38,7 +38,7 @@ class MctsStateStorage {
      *
      * @param states states for which to increment the lost-counter
      */
-    void addLose(Iterable<String> states) {
+    public void addLose(Iterable<String> states) {
         states.forEach(this::addLose);
     }
 
@@ -47,7 +47,7 @@ class MctsStateStorage {
      *
      * @param states states for which to increment the draw-counter
      */
-    void addDraw(Iterable<String> states) {
+    public void addDraw(Iterable<String> states) {
         states.forEach(this::addDraw);
     }
 
@@ -81,10 +81,15 @@ class MctsStateStorage {
         statisticStorage.get(state).incDraw();
     }
 
+    public GameStateStatistic addState(String state) {
+        addIfAbsent(state);
+        return statisticStorage.get(state);
+    }
+
     /**
      * @return the number of states stored in this storage
      */
-    int getStateCount() {
+    public int getStateCount() {
         return statisticStorage.size();
     }
 
@@ -94,9 +99,13 @@ class MctsStateStorage {
      * @param state The state for which to retrieve the statistics
      * @return the statistics for the board specified by {@param state}
      */
-    GameStateStatistic getStatistics(String state) {
-        addIfAbsent(state);
-        return statisticStorage.get(state);
+    public GameStateStatistic getStatistics(String state) {
+//        addIfAbsent(state);
+        if (statisticStorage.containsKey(state)) {
+            return statisticStorage.get(state);
+        } else {
+            return proto.getInstance();
+        }
     }
 
     /**
@@ -106,6 +115,10 @@ class MctsStateStorage {
         if (!statisticStorage.containsKey(state)) {
             statisticStorage.put(state, proto.getInstance());
         }
+    }
+
+    public void reset() {
+        statisticStorage.clear();
     }
 
 }

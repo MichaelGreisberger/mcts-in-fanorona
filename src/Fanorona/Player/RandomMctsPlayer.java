@@ -1,8 +1,9 @@
-package Fanorona.mcts;
+package Fanorona.Player;
 
 import Fanorona.Board.Board;
 import Fanorona.Move.Move;
 import Fanorona.Move.MoveList;
+import Fanorona.mcts.GameStateStatistic;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,13 +21,14 @@ public class RandomMctsPlayer extends MctsMachinePlayer {
      * Random-generator for move-selection during simulation
      */
     private final Random RAND;
+    private int latestSimulationCount;
 
     public RandomMctsPlayer(int millisToRun, boolean verbose) {
         this(millisToRun, verbose, new Random().nextLong());
     }
 
     public RandomMctsPlayer(int millisToRun, boolean verbose, long seed) {
-        super(millisToRun, verbose, new MctsStateStorage(new GameStateStatisticImpl()));
+        super(millisToRun, verbose);
         this.RAND = new Random(seed);
         if (verbose){
             System.out.println("The seed for this RandomMctsPlayer is: " + seed);
@@ -37,15 +39,21 @@ public class RandomMctsPlayer extends MctsMachinePlayer {
     public Move getNextMove(Board board) {
         long millisStop = System.currentTimeMillis() + MILLIS_TO_RUN;
         MoveList possibleMoves = board.getPossibleMoves();
-        int counter = 0;
-        int stateCountbefore = storage.getStateCount();
+        latestSimulationCount = 0;
+        int stateCountBefore = storage.getStateCount();
         while (System.currentTimeMillis() < millisStop) {
             simulateGame(board, possibleMoves);
-            counter++;
+            latestSimulationCount++;
         }
-        printVerbosityMsg(board, possibleMoves, counter, stateCountbefore);
+        printVerbosityMsg(board, possibleMoves, latestSimulationCount, stateCountBefore);
         return selectBestMove(board, possibleMoves);
     }
+
+    @Override
+    public int getNumberOfSimulatedGames() {
+        return latestSimulationCount;
+    }
+
 
     /**
      * Simulates a random game starting with the position in {@code board}.

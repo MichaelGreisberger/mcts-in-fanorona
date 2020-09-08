@@ -23,4 +23,8 @@ public enum BoardSize {
     public int x() {
         return point.x;
     }
+
+    public int maxPiecesPP() {
+        return point.x * point.y / 2;
+    }
 }

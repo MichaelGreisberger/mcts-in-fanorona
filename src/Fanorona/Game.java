@@ -3,11 +3,9 @@ package Fanorona;
 import Fanorona.Board.Board;
 import Fanorona.Board.BoardSize;
 import Fanorona.Move.Move;
-import Fanorona.mcts.UctMctsPlayer;
+import Fanorona.Player.PlayerWrapper;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -45,49 +43,51 @@ public class Game {
      */
     private Map<String, Integer> revisitCounter = new HashMap<>();
 
-    /**
-     * Used to read data from the console
-     */
-    private BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+    private GameStatistics statistics = new GameStatistics();
 
-    public Game(BoardSize size) {
-        this(new Board(size));
+    private boolean writeOutput;
+
+    public Game(BoardSize size, List<String> args, boolean writeOutput) {
+        this(new Board(size), args, writeOutput);
     }
 
-    public Game(BoardSize size, boolean verbose) {
-        this(size);
+    public Game(BoardSize size, boolean verbose, List<String> args, boolean writeOutput) {
+        this(size, args, writeOutput);
         this.verbose = verbose;
     }
 
-    public Game(Board board) {
+    public Game(Board board, List<String> args, boolean writeOutput) {
         this.board = board;
+        this.statistics.setArguments(args);
+        this.writeOutput = writeOutput;
     }
 
     /**
      * Manages the game. Asks for the next move of the current player, prints messages and keeps track of the status
      * of the game.
      */
-    void startGame(int rounds) {
+    void startGame(int rounds) throws IOException {
+        statistics.setP1(player1);
+        statistics.setP2(player2);
         PlayerWrapper curr = board.getCurrentPlayer() == 1 ? player1 : player2;
         Move move;
         int i = 0;
         while (i < rounds) {
             printRoundStartMsg(curr.name, curr.color);
-            move = curr.player.getNextMove(board);
+            move = curr.getNextMove(board);
             printChosenMoveMSg(curr.name, move.toString());
             board = board.applyMove(move);
             if (hasSomeoneWon()) {
-                System.out.println(board.toPrintString());
-                System.out.println(curr.name + " won the game!");
-                curr.incWon();
-//                printWinnerMsg(out);
-                return;
+                println(board.toPrintString());
+                println(curr.name + " won the game!");
+                statistics.setResult(curr.name + " won the game!");
+                break;
             }
-            if (isDraw()) {
-                System.out.println(board.toPrintString());
-                System.out.println("Its a draw!");
-//                printWinnerMsg(out);
-                return;
+            if (i >= 99) {
+                println(board.toPrintString());
+                println("Its a draw!");
+                statistics.setResult("Its a draw!");
+                break;
             }
             if (curr == player2) {
                 curr = player1;
@@ -96,10 +96,20 @@ public class Game {
             }
             i++;
         }
+        if (writeOutput) {
+            println(statistics.writeStatisticsToTextFile());
+            statistics.writeStatisticsToCsvFile();
+        } else {
+            println(statistics.getPrintableString());
+        }
     }
 
     public void startGame() {
-        startGame(Integer.MAX_VALUE);
+        try {
+            startGame(101);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -110,8 +120,9 @@ public class Game {
      */
     private void printRoundStartMsg(String name, String color) {
         if (verbose) {
-            System.out.println("\n" + "<><><><><><><><><><><><><><><><   " + name + "'s Turn (" + color +
-                    ")  ><><><><><><><><><><><><><><><><><><>" + "\n" + board.toPrintString() + "\n");
+            println("\n" + "<><><><><><><><><><><><><><><><   " + name + "'s Turn (" + color +
+                    ")  ><><><><><><><><><><><><><><><><><><>");
+            println(board.toPrintString() + "\n");
         }
     }
 
@@ -123,19 +134,8 @@ public class Game {
      */
     private void printChosenMoveMSg(String name, String move) {
         if (verbose) {
-            System.out.println(name + " choose move " + move + " and applies it to board " + board.getStateB64() + "\n");
+            println(name + " choose move " + move + " and applies it to board " + board.getStateB64() + "\n");
         }
-    }
-
-    /**
-     * Prints a message summarizing the game statistics of the two players. This message only makes sense if this game
-     * is a multi-round game.
-     */
-    private void printWinnerMsg() {
-        System.out.println(player2.name + " (" + player2.color + ") won " + player2.wonGames + " times and " +
-                player1.name + " (" + player1.color + ") won " + player1.wonGames + " times. This means that " +
-                player1.name + " won " + (((double) player1.wonGames) / (player1.wonGames + player2.wonGames) * 100) +
-                "% of all games!");
     }
 
     /**
@@ -174,13 +174,23 @@ public class Game {
     /**
      * exchange the players positions (switch the players)
      */
-    public void switchTables() {
+    public void switchSeats() {
+        player1.player = player1.player.reset();
+        player2.player = player2.player.reset();
+        board.reset();
+        statistics.reset();
+
         PlayerWrapper temp = player1;
-        player1 = player2;
-        player1.color = "white";
-        player2 = temp;
-        player2.color = "black";
+        player1 = new PlayerWrapper(player2.player, player2.name, "white");
+        player2 = new PlayerWrapper(temp.player, temp.name, "black");
     }
 
+    private void println(String msg) {
+        System.out.println(msg);
+    }
 
+    public void shutDown() {
+        player1.player.shutDown();
+        player2.player.shutDown();
+    }
 }

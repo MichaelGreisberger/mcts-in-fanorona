@@ -40,6 +40,8 @@ public class Move {
                 case 'P':
                     types[(i - 2) / 2 - 1] = MoveType.PAIKA;
                     break;
+                default:
+                    types[(i - 2) / 2 - 1] = MoveType.PAIKA;
             }
         }
     }
@@ -199,6 +201,39 @@ public class Move {
             s += "" + (char) ('a' + nodes[i].x) + "" + nodes[i].y + types[i - 1];
         }
         return s;
+    }
+
+    public String toSchaddMoveString() {
+        String s = (char) ('a' + nodes[0].x) + "" + (5 - nodes[0].y);
+        for (int i = 1; i < nodes.length; i++) {
+            s += "-" + (char) ('a' + nodes[i].x) + "" + (5 - nodes[i].y) + types[i - 1];
+        }
+        return s.replace("P", "");
+    }
+
+    public static Move fromSchaddMoveString(String moveString) {
+        char[] chars = moveString.toCharArray();
+        int nodeCount = (moveString.length() - 2) / 3 + 1;
+        Point[] nodes = new Point[nodeCount];
+        MoveType[] types = new MoveType[nodeCount - 1];
+        nodes[0] = new Point(chars[0] - 'a', (5 - (chars[1] - 48)));
+        for (int i = 4; i < chars.length; i += 3) {
+            nodes[(i - 2) / 3 + 1] = new Point(chars[i - 2] - 'a', (5 - (chars[i - 1] - 48)));
+            switch (chars[i]) {
+                case 'A':
+                    types[(i - 2) / 3] = MoveType.APPROACH;
+                    break;
+                case 'W':
+                    types[(i - 2) / 3] = MoveType.WITHDRAW;
+                    break;
+                case 'P':
+                    types[(i - 2) / 2 - 1] = MoveType.PAIKA;
+                    break;
+                default:
+                    types[(i - 2) / 2 - 1] = MoveType.PAIKA;
+            }
+        }
+        return new Move(nodes, types);
     }
 
 }

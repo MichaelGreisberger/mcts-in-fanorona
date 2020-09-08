@@ -15,10 +15,10 @@ import java.util.List;
  */
 public class Board {
     private BoardState state;
-
-    BoardState getState() {
-        return state;
-    }
+    private Move lastMove;
+    private List<Point> capturedLastRound;
+    private int whitePieces;
+    private int blackPieces;
 
     public Board(BoardSize size, String state) {
         this(size, state.toCharArray());
@@ -34,6 +34,34 @@ public class Board {
 
     public Board(BoardState state) {
         this.state = state;
+        this.whitePieces = state.getSize().maxPiecesPP();
+        this.blackPieces = state.getSize().maxPiecesPP();
+        this.capturedLastRound = new LinkedList<>();
+    }
+
+    /**
+     * Returns the board initialized with the state specified by the Base64 encoded string s64
+     *
+     * @param s64  A string representation of the desired board state in Base64 encoding
+     * @param size The size of the desired board
+     * @return the board initialized with the state specified by the Base64 encoded string s64
+     */
+    public static Board fromB64(String s64, BoardSize size) {
+        Base64.Decoder decoder = Base64.getDecoder();
+        byte[] bState = decoder.decode(s64);
+        return new Board(size, new String(bState).toCharArray());
+    }
+
+    public BoardState getState() {
+        return state;
+    }
+
+    public List<Point> getCapturedLastRound() {
+        return capturedLastRound;
+    }
+
+    public Move getLastMove() {
+        return lastMove;
     }
 
     /**
@@ -127,6 +155,7 @@ public class Board {
      */
     public Board applyMove(Move move) {
         Board board = getCopy();
+        board.lastMove = move;
         MoveType[] types = move.getTypes();
         Point[] nodes = move.getNodes();
         int player = state.getCurrentPlayer();
@@ -167,7 +196,6 @@ public class Board {
         state.setPosition(to, player);
     }
 
-
     /**
      * captures the position specified by the parameters x and y. Then evaluates the next position in
      * the direction specified with the parameters dirX and dirY and captures the position if it was inhabited by an
@@ -195,12 +223,19 @@ public class Board {
      */
     private void capture(Point node, int dirX, int dirY, int opponent) {
         state.setPosition(node, 0);
+        capturedLastRound.add((Point) node.clone());
+
+        if (opponent == 1) {
+            whitePieces--;
+        } else {
+            blackPieces--;
+        }
+
         node.translate(dirX, dirY);
         if (isInBoardSpace(node) && state.getPosition(node) == opponent) {
             capture(node, dirX, dirY, opponent);
         }
     }
-
 
     /**
      * Evaluated whether there is an opponent piece in the direction specified by direction.
@@ -353,23 +388,18 @@ public class Board {
     }
 
     /**
-     * Returns the board initialized with the state specified by the Base64 encoded string s64
-     *
-     * @param s64  A string representation of the desired board state in Base64 encoding
-     * @param size The size of the desired board
-     * @return the board initialized with the state specified by the Base64 encoded string s64
-     */
-    public static Board fromB64(String s64, BoardSize size) {
-        Base64.Decoder decoder = Base64.getDecoder();
-        byte[] bState = decoder.decode(s64);
-        return new Board(size, new String(bState).toCharArray());
-    }
-
-    /**
      * @return the state of this board encoded as Base64 string
      */
     public String getStateB64() {
         return state.getStateB64();
+    }
+
+    public int getWhitePieces() {
+        return whitePieces;
+    }
+
+    public int getBlackPieces() {
+        return blackPieces;
     }
 
     /**
@@ -391,5 +421,13 @@ public class Board {
      */
     private Board getCopy() {
         return new Board(state.getCopy());
+    }
+
+    public void reset() {
+        this.blackPieces = 0;
+        this.whitePieces = 0;
+        this.capturedLastRound = new LinkedList<>();
+        this.lastMove = null;
+        this.state.reset();
     }
 }

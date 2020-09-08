@@ -10,21 +10,6 @@ public class GameStateStatisticImpl implements GameStateStatistic {
     private int drawGames = 0;
 
     @Override
-    public int getWonGames() {
-        return wonGames;
-    }
-
-    @Override
-    public int getLostGames() {
-        return lostGames;
-    }
-
-    @Override
-    public int getDrawGames() {
-        return drawGames;
-    }
-
-    @Override
     public void incWon() {
         wonGames++;
     }

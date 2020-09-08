@@ -1,9 +1,11 @@
-package Fanorona.mcts;
+package Fanorona.Player;
 
 import Fanorona.Board.Board;
 import Fanorona.Move.Move;
 import Fanorona.Move.MoveList;
-import Fanorona.Player;
+import Fanorona.mcts.GameStateStatistic;
+import Fanorona.mcts.GameStateStatisticImpl;
+import Fanorona.mcts.MctsStateStorage;
 
 public abstract class MctsMachinePlayer implements Player {
     /**
@@ -27,11 +29,15 @@ public abstract class MctsMachinePlayer implements Player {
         this.storage = storage;
     }
 
+    MctsMachinePlayer(int millisToRun, boolean verbose) {
+        this(millisToRun, verbose, new MctsStateStorage(new GameStateStatisticImpl()));
+    }
+
     @Override
     public abstract Move getNextMove(Board board);
 
     Move selectBestMove(Board board, MoveList possibleMoves) {
-        double maxVal = -1;
+        double maxVal = -Double.MAX_VALUE;
         Move curBestMove = null;
         double curVal;
         for (Move move : possibleMoves) {
@@ -54,5 +60,22 @@ public abstract class MctsMachinePlayer implements Player {
         }
     }
 
+    @Override
+    public Player reset() {
+        storage.reset();
+        return this;
+    }
+
+    @Override
+    public void shutDown() {
+        //nothing to do here
+    }
+
     protected abstract GameStateStatistic getStatistics(Board board, Move move);
+
+    @Override
+    public int getNumberOfStoredStates() {
+        return storage.getStateCount();
+    }
+
 }

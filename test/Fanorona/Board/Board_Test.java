@@ -230,5 +230,15 @@ class Board_Test {
         assertEquals(expected, actual);
     }
 
+    @Test
+    void CaptureCount_success() {
+        int expectedPiecesLeftWhite = 22;
+        int expectedPiecesLeftBlack = 20;
+        Board board = new Board(BoardSize.LARGE);
+        board = board.applyMove(new Move("e3e2A"));
+        assertEquals(expectedPiecesLeftWhite, board.getWhitePieces());
+        assertEquals(expectedPiecesLeftBlack, board.getBlackPieces());
+    }
+
 
 }

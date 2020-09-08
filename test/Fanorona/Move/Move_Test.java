@@ -53,6 +53,12 @@ class Move_Test {
         Move move = new Move(new Point[]{new Point(1, 1), new Point(2, 2), new Point(3, 3)}, new MoveType[]{MoveType.APPROACH, MoveType.WITHDRAW});
         assertFalse(move.alwaysChangeDirection());
     }
+
+    @Test
+    void newMoveWithinvalidMoveString_noFailure() {
+        Move move = new Move("fdjkalö");
+        System.out.println(move.toString());
+    }
 //    @Test
 //    public void testCreateMove_failureToShort() {
 //        Fanorona.Move.Move move = new Fanorona.Move.Move(new Point[] {new Point(0,0)}, new MoveType[] {});

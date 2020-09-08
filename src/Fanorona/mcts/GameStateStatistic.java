@@ -21,21 +21,6 @@ public interface GameStateStatistic {
     void incDraw();
 
     /**
-     * returns the number of won games
-     */
-    int getWonGames();
-
-    /**
-     * returns the number of lost games
-     */
-    int getLostGames();
-
-    /**
-     * returns the number of games that resulted in a draw
-     */
-    int getDrawGames();
-
-    /**
      * returns the number of played games
      */
     int getTotalNumberOfPlays();
