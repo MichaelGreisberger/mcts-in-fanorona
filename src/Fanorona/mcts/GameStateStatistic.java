@@ -5,25 +5,16 @@ package Fanorona.mcts;
  * All values of this statistic are associated with a certain state of a Fanrorona game.
  */
 public interface GameStateStatistic {
-    /**
-     * Increments the number of games won
-     */
-    void incWon();
 
     /**
-     * Increments the number of games lost
+     * updates the statistics according to the result
      */
-    void incLost();
-
-    /**
-     * Increments the number of games that resulted in a draw
-     */
-    void incDraw();
+    void update(double result);
 
     /**
      * returns the number of played games
      */
-    int getTotalNumberOfPlays();
+    int getCount();
 
     /**
      * returns the expected reward for this state

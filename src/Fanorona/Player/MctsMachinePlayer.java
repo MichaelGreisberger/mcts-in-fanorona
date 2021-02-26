@@ -4,8 +4,10 @@ import Fanorona.Board.Board;
 import Fanorona.Move.Move;
 import Fanorona.Move.MoveList;
 import Fanorona.mcts.GameStateStatistic;
-import Fanorona.mcts.GameStateStatisticImpl;
 import Fanorona.mcts.MctsStateStorage;
+import Fanorona.mcts.SimpleGameStateStatistic;
+
+import java.util.Set;
 
 public abstract class MctsMachinePlayer implements Player {
     /**
@@ -30,7 +32,7 @@ public abstract class MctsMachinePlayer implements Player {
     }
 
     MctsMachinePlayer(int millisToRun, boolean verbose) {
-        this(millisToRun, verbose, new MctsStateStorage(new GameStateStatisticImpl()));
+        this(millisToRun, verbose, new MctsStateStorage(new SimpleGameStateStatistic()));
     }
 
     @Override
@@ -38,16 +40,16 @@ public abstract class MctsMachinePlayer implements Player {
 
     Move selectBestMove(Board board, MoveList possibleMoves) {
         double maxVal = -Double.MAX_VALUE;
-        Move curBestMove = null;
+        Move bestMove = null;
         double curVal;
         for (Move move : possibleMoves) {
             curVal = getStatistics(board, move).getReward();
             if (curVal > maxVal) {
                 maxVal = curVal;
-                curBestMove = move;
+                bestMove = move;
             }
         }
-        return curBestMove;
+        return bestMove;
     }
 
     void printVerbosityMsg(Board board, MoveList possibleMoves, int counter, int stateCountPrev) {
@@ -78,4 +80,24 @@ public abstract class MctsMachinePlayer implements Player {
         return storage.getStateCount();
     }
 
+    double getResult(int player, Board board) {
+        double result;
+        if (board.getBlackPieces() > 0 && board.getWhitePieces() > 0) {
+            result = 0.5;
+        } else if (player == (board.getCurrentPlayer() ^ 3)) {
+            result = 1;
+        } else {
+            result = 0;
+        }
+        return result;
+    }
+
+    void backpropagate(Set<String> statesPlayer, Set<String> statesOpponent, double result) {
+        for (String stateB64 : statesPlayer) {
+            storage.addState(stateB64).update(result);
+        }
+        for (String stateB64 : statesOpponent) {
+            storage.addState(stateB64).update(-result);
+        }
+    }
 }

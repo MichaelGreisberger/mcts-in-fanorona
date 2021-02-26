@@ -30,7 +30,7 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
 
     private int latestSimulationCount;
     private Function4<Double, Integer, Integer, Double> steeringFunction;
-
+    private int childCount;
 
     public SteeredMctsPlayer(int millisToRun, boolean verbose, double explorationFactor, String type) {
         super(millisToRun, verbose);
@@ -38,8 +38,12 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
 
         if (type.equals("uct")) {
             steeringFunction = this::calcUct;
-        } else {
+        } else if (type.equals("puct")) {
             steeringFunction = this::calcPuct;
+        } else if (type.equals("pucts")) {
+            steeringFunction = this::calcPuctSpecial;
+        } else {
+            throw new RuntimeException("unknown type: " + type);
         }
     }
 
@@ -51,6 +55,9 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
             EXPLORATION_FACTOR = DEFAULT_UCT_EF;
         } else if (type.equals("puct")) {
             steeringFunction = this::calcPuct;
+            EXPLORATION_FACTOR = DEFAULT_PUCT_EF;
+        } else if (type.equals("pucts")) {
+            steeringFunction = this::calcPuctSpecial;
             EXPLORATION_FACTOR = DEFAULT_PUCT_EF;
         } else {
             throw new RuntimeException(type + " is no legal player type! Legal types are: uct, puct.");
@@ -65,6 +72,8 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
             steeringFunction = this::calcUct;
         } else if (type.equals("puct")) {
             steeringFunction = this::calcPuct;
+        } else if (type.equals("pucts")) {
+            steeringFunction = this::calcPuctSpecial;
         } else {
             throw new RuntimeException(type + " is no legal player type! Legal types are: uct, puct.");
         }
@@ -74,8 +83,8 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
         this(millisToRun, verbose, 1 / Math.sqrt(2), "uct");
     }
 
-    SteeredMctsPlayer(int millisToRun, boolean verbose, MctsStateStorage storage) {
-        this(millisToRun, verbose, 1 / Math.sqrt(2), storage, "uct");
+    public SteeredMctsPlayer(int millisToRun, boolean verbose, MctsStateStorage storage, String type) {
+        this(millisToRun, verbose, 1 / Math.sqrt(2), storage, type);
     }
 
     @Override
@@ -119,26 +128,10 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
                 break; //draw
             }
         }
-        int winner = board.getCurrentPlayer() ^ 3;
-        backpropagate(statesPlayer, statesOpponent, player, winner, moves.size() > 0);
+        backpropagate(statesPlayer, statesOpponent, getResult(player, board));
     }
 
-    protected void backpropagate(Set<String> statesPlayer, Set<String> statesOpponent, int player, int winner, boolean draw) {
-        if (draw) {
-            storage.addDraw(statesOpponent);
-            storage.addDraw(statesPlayer);
-        } else {
-            if (player == winner) {
-                storage.addWin(statesPlayer);
-                storage.addLose(statesOpponent);
-            } else {
-                storage.addWin(statesOpponent);
-                storage.addLose(statesPlayer);
-            }
-        }
-    }
-
-    protected boolean updateStates(String stateb64, Set<String> statesPlayer, Set<String> statesOpponent, boolean playerTurn) {
+    boolean updateStates(String stateb64, Set<String> statesPlayer, Set<String> statesOpponent, boolean playerTurn) {
         if (playerTurn) {
             statesPlayer.add(stateb64);
             return false;
@@ -154,15 +147,16 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
      * @param board the state for which to select a move
      * @return the move that maximises the UCT value of the resulting board state.
      */
-    protected Move getMaxUtcMove(Board board, MoveList moves) {
+    Move getMaxUtcMove(Board board, MoveList moves) {
         GameStateStatistic parentStats = storage.getStatistics(board.getStateB64());
         double maxUctValue = -Double.MAX_VALUE;
         double curUctValue;
         Move maxUctMove = null;
+        childCount = moves.size();
 
         for (Move move : moves) {
             GameStateStatistic childStats = getStatistics(board, move);
-            curUctValue = steeringFunction.apply(childStats.getReward(), childStats.getTotalNumberOfPlays(), parentStats.getTotalNumberOfPlays());
+            curUctValue = steeringFunction.apply(childStats.getReward(), childStats.getCount(), parentStats.getCount());
 
             if (curUctValue > maxUctValue) {
                 maxUctMove = move;
@@ -190,11 +184,19 @@ public class SteeredMctsPlayer extends MctsMachinePlayer {
         }
     }
 
-    private double calcPuct(double reward, int visitedCountChild, int visitecCountParent) {
-        if (visitecCountParent == 0) {
+    private double calcPuct(double reward, int visitedCountChild, int visitedCountParent) {
+        if (visitedCountParent == 0) {
             return 0;
         } else {
-            return reward + EXPLORATION_FACTOR * 1 * Math.sqrt(visitecCountParent) / (1 + visitedCountChild);
+            return reward + EXPLORATION_FACTOR * 1 * Math.sqrt(visitedCountParent) / (1 + visitedCountChild);
+        }
+    }
+
+    private double calcPuctSpecial(double reward, int visitedCountChild, int visitedCountParent) {
+        if (visitedCountParent == 0) {
+            return 0;
+        } else {
+            return reward + EXPLORATION_FACTOR * 1 / childCount * Math.sqrt(visitedCountParent) / (1 + visitedCountChild);
         }
     }
 

@@ -64,30 +64,23 @@ public class RandomMctsPlayer extends MctsMachinePlayer {
         int player = board.getCurrentPlayer();
         MoveList moves = possibleMoves;
         Set<String> states = new HashSet<>();
+        int depth = 0;
 
         while (moves.size() > 0) {
             board = board.applyMove(getRandomMove(moves));
             if (store) {
-                if (!states.add(board.getStateB64())) {
-                    break; //draw
-                }
+                states.add(board.getStateB64());
                 store = false;
             } else {
                 store = true;
             }
+            depth++;
+            if (depth >= 100) {
+                break; //draw
+            }
             moves = board.getPossibleMoves();
         }
-
-        if (moves.size() > 0) {
-            storage.addDraw(states);
-        } else {
-            int winner = board.getCurrentPlayer() ^ 3;
-            if (player == winner) {
-                storage.addWin(states);
-            } else {
-                storage.addLose(states);
-            }
-        }
+        backpropagate(states, new HashSet<>(), getResult(player, board));
     }
 
     /**

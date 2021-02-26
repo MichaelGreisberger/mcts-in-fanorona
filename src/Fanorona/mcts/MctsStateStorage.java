@@ -24,63 +24,6 @@ public class MctsStateStorage {
         proto = prototype;
     }
 
-    /**
-     * Increases the number of won games for all states in {@param states}
-     *
-     * @param states states for which to increment the win-counter
-     */
-    public void addWin(Iterable<String> states) {
-        states.forEach(this::addWin);
-    }
-
-    /**
-     * Increases the number of lost games for all states in {@param states}
-     *
-     * @param states states for which to increment the lost-counter
-     */
-    public void addLose(Iterable<String> states) {
-        states.forEach(this::addLose);
-    }
-
-    /**
-     * Increases the number of draw games for all states in {@param states}
-     *
-     * @param states states for which to increment the draw-counter
-     */
-    public void addDraw(Iterable<String> states) {
-        states.forEach(this::addDraw);
-    }
-
-    /**
-     * Increases the number of won games for {@param state}
-     *
-     * @param state state for which to increment the win-counter
-     */
-    void addWin(String state) {
-        addIfAbsent(state);
-        statisticStorage.get(state).incWon();
-    }
-
-    /**
-     * Increases the number of lost games for {@param state}
-     *
-     * @param state state for which to increment the lost-counter
-     */
-    void addLose(String state) {
-        addIfAbsent(state);
-        statisticStorage.get(state).incLost();
-    }
-
-    /**
-     * Increases the number of draw games for {@param state}
-     *
-     * @param state state for which to increment the draw-counter
-     */
-    void addDraw(String state) {
-        addIfAbsent(state);
-        statisticStorage.get(state).incDraw();
-    }
-
     public GameStateStatistic addState(String state) {
         addIfAbsent(state);
         return statisticStorage.get(state);

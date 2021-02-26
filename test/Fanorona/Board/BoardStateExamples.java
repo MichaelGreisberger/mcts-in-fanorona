@@ -6,13 +6,17 @@ package Fanorona.Board;
 public class BoardStateExamples {
 
     static final String FourThreeDrawExample = "QABAAAIAFCAAIABA";
+
+    static final String TwoFiveDrawExample = "QABAAAIAFCAAIABA";
+    //    static final String TwoFiveDrawExample_char = "\u0080\u0000\b\u0000\b\u0004 \u0080\u0000\u0080\u0000\b";
+    static final String TwoFiveDrawExample_char = "\u0080\u0000\b\u0000\b\u0004\u0010\u0080\u0000\u0080\u0000\b";
     /*
-    010000
-    000000000000000000
-    000010100001100110
-    000000000000000000
-    000100101000100000
-    000000000000000000
+    100000
+    000000000000001000
+    000000000000100000
+    000100000100001000
+    000000000000100000
+    000000000000001000
      */
     static final String PAPER_EXAMPLE_STATE = "@\u0000\u0000\n\u0019\u0080\u0000\u0001(\u0080\u0000\u0000";
 
@@ -192,4 +196,19 @@ White's turn
 4   - W - W -   -   -   -   -   -
      */
     public static final String INTERESTING_CHOICE_B64  = "woDCisKAQAAIAAAIIFAA";
+
+    /*
+<><><><><><><><><><><><><><><><   Material's Turn (white)  ><><><><><><><><><><><><><><><><><><>
+      a   b   c   d   e   f   g   h   i
+0   -   -   - B -   -   -   -   -
+  | \ | / | \ | / | \ | / | \ | / |
+1   -   -   -   - B -   -   -   -
+  | / | \ | / | \ | / | \ | / | \ |
+2   -   - W -   -   - B -   -   -
+  | \ | / | \ | / | \ | / | \ | / |
+3 W -   -   -   -   -   -   -   -
+  | / | \ | / | \ | / | \ | / | \ |
+4   -   - W -   - W -   -   -   - W
+     */
+    public static final String MATERIAL_PLAYER_FAIL_1 = "QAgAAMKAAQgEAAARAQ==";
 }

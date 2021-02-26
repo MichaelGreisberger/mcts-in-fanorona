@@ -29,13 +29,17 @@ public class Board {
     }
 
     public Board(BoardSize size) {
-        this(new BoardState(size));
+        this(new BoardState(size), size.maxPiecesPP(), size.maxPiecesPP());
     }
 
     public Board(BoardState state) {
+        this(state, state.countPieces(1), state.countPieces(2));
+    }
+
+    public Board(BoardState state, int whitePieces, int blackPieces) {
         this.state = state;
-        this.whitePieces = state.getSize().maxPiecesPP();
-        this.blackPieces = state.getSize().maxPiecesPP();
+        this.whitePieces = whitePieces;
+        this.blackPieces = blackPieces;
         this.capturedLastRound = new LinkedList<>();
     }
 
@@ -56,6 +60,11 @@ public class Board {
         return state;
     }
 
+    /**
+     * Returns a list of all positions captured by the last capturing move
+     *
+     * @return
+     */
     public List<Point> getCapturedLastRound() {
         return capturedLastRound;
     }
@@ -188,7 +197,7 @@ public class Board {
             case WITHDRAW:
                 dirX = from.x - to.x;
                 dirY = from.y - to.y;
-                capture(to.x + dirX, to.y + dirY, dirX, dirY, opponent);
+                capture(to.x + dirX * 2, to.y + dirY * 2, dirX, dirY, opponent);
                 break;
         }
 
@@ -420,12 +429,12 @@ public class Board {
      * @return a deep-cloned copy of this board
      */
     private Board getCopy() {
-        return new Board(state.getCopy());
+        return new Board(state.getCopy(), whitePieces, blackPieces);
     }
 
     public void reset() {
-        this.blackPieces = 0;
-        this.whitePieces = 0;
+        this.blackPieces = state.getSize().maxPiecesPP();
+        this.whitePieces = state.getSize().maxPiecesPP();
         this.capturedLastRound = new LinkedList<>();
         this.lastMove = null;
         this.state.reset();

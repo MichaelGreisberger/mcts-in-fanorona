@@ -2,6 +2,7 @@ package Fanorona.Player;
 
 import Fanorona.Board.Board;
 import Fanorona.Board.BoardSize;
+import Fanorona.Main;
 import Fanorona.Move.Move;
 import Fanorona.Move.MoveList;
 import Fanorona.Player.MsgDelegates.HumanPlayerCommunicationDelegate;
@@ -9,6 +10,7 @@ import Fanorona.Player.MsgDelegates.RafSocketCommunicationDelegate;
 import Fanorona.Player.MsgDelegates.StreamPlayerCommunicationDelegate;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -17,6 +19,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.Scanner;
 
 /**
  * This implementation of {@code Player} uses streams for communication. Those streams could connect to a console or
@@ -58,15 +61,29 @@ public class StreamPlayer implements Player {
         return new StreamPlayer(socket.getInputStream(), socket.getOutputStream(), new RafSocketCommunicationDelegate(alphaBetaDepth, BoardSize.LARGE), socket);
     }
 
-    public static Player initWithExecutable(int millisToRun, String filePath, StreamPlayerCommunicationDelegate delegate, int schaddPlayerType, boolean verbose) throws IOException {
-        String cmd = "java -jar " + filePath + " " + schaddPlayerType + " " + (verbose ? 1 : 0) + " " + millisToRun;
+    public static Player initWithSchaddExecutable(int millisToRun, String schaddFilePath, StreamPlayerCommunicationDelegate delegate, int schaddPlayerType, boolean verbose) throws IOException {
+        String cmd = "java -jar " + schaddFilePath + " " + schaddPlayerType + " " + (verbose ? 1 : 0) + " " + millisToRun;
+        System.out.println("command for schadd player: " + cmd);
+        Process process = execCmd(cmd);
+        if (process.isAlive()) {
+            return new StreamPlayer(process.getInputStream(), process.getOutputStream(), delegate, process, cmd);
+        } else {
+            Scanner scanner = new Scanner(process.getInputStream());
+            StringBuilder sb = new StringBuilder();
+            while (scanner.hasNext()) {
+                sb.append(scanner.nextLine());
+            }
+            throw new IOException("Couldn't start process! Exit Code: " + process.exitValue() + ", info: " + process.info().toString() + "\noutput: " + sb.toString());
+        }
+    }
+
+    public static Player initWithSchaddExecutable(String cmd, StreamPlayerCommunicationDelegate delegate) throws IOException {
         Process process = execCmd(cmd);
         return new StreamPlayer(process.getInputStream(), process.getOutputStream(), delegate, process, cmd);
     }
 
-    public static Player initWithExecutable(String cmd, StreamPlayerCommunicationDelegate delegate) throws IOException {
-        Process process = execCmd(cmd);
-        return new StreamPlayer(process.getInputStream(), process.getOutputStream(), delegate, process, cmd);
+    private static Process execCmd(String cmd) throws IOException {
+        return Runtime.getRuntime().exec(cmd, null, new File(Main.tmpdir));
     }
 
     @Override
@@ -90,7 +107,7 @@ public class StreamPlayer implements Player {
             process.destroy();
             try {
                 process.waitFor();
-                return initWithExecutable(cmd, msgDelegate);
+                return initWithSchaddExecutable(cmd, msgDelegate);
             } catch (IOException | InterruptedException e) {
                 e.printStackTrace();
             }
@@ -106,10 +123,6 @@ public class StreamPlayer implements Player {
     @Override
     public int getNumberOfSimulatedGames() {
         return 0;
-    }
-
-    private static Process execCmd(String cmd) throws IOException {
-        return Runtime.getRuntime().exec(cmd);
     }
 
     @Override

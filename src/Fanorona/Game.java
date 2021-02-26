@@ -3,6 +3,7 @@ package Fanorona;
 import Fanorona.Board.Board;
 import Fanorona.Board.BoardSize;
 import Fanorona.Move.Move;
+import Fanorona.Player.Player;
 import Fanorona.Player.PlayerWrapper;
 
 import java.io.IOException;
@@ -43,23 +44,36 @@ public class Game {
      */
     private Map<String, Integer> revisitCounter = new HashMap<>();
 
-    private GameStatistics statistics = new GameStatistics();
+    private GameStatistics statistics;
 
     private boolean writeOutput;
 
-    public Game(BoardSize size, List<String> args, boolean writeOutput) {
-        this(new Board(size), args, writeOutput);
+    public Game(BoardSize size, List<String> args, boolean writeOutput, String statFileName) {
+        this(new Board(size), args, writeOutput, statFileName);
     }
 
-    public Game(BoardSize size, boolean verbose, List<String> args, boolean writeOutput) {
-        this(size, args, writeOutput);
+    public Game(BoardSize size, List<String> args, boolean writeOutput, boolean verbose) {
+        this(size, args, writeOutput, "Games.csv", verbose);
+    }
+
+    public Game(BoardSize size, List<String> args, boolean writeOutput, String statFileName, boolean verbose) {
+        this(size, args, writeOutput, statFileName);
         this.verbose = verbose;
     }
 
-    public Game(Board board, List<String> args, boolean writeOutput) {
+    public Game(Board board, List<String> args, boolean writeOutput, String statFileName) {
         this.board = board;
+        this.statistics = new GameStatistics(statFileName);
         this.statistics.setArguments(args);
         this.writeOutput = writeOutput;
+    }
+
+    public Game(Board board, Player p1, Player p2) {
+        this.board = board;
+        this.player1 = new PlayerWrapper(p1, "player1", "white");
+        this.player2 = new PlayerWrapper(p2, "player2", "black");
+        this.statistics = new GameStatistics("");
+        writeOutput = false;
     }
 
     /**

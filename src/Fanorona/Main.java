@@ -13,9 +13,11 @@ import Fanorona.Player.StreamPlayer;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.SocketException;
+import java.nio.file.Files;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -25,38 +27,49 @@ import java.util.TreeMap;
 public class Main {
     public static String version = "0.1.4 - PUCT!";
     private static Map<String, String> defaults = new TreeMap<>();
+    public static String tmpdir;
+    public static String schaddFileName = "Fanorona_improved.jar";
 
     /**
      * Main entry point for the application. Initializes the game from the Console.
      */
     public static void main(String[] args) {
+//        ListDirContent();
+        setAndInitTmpdir();
         if (args.length > 0) {
-            initDefaults();
-            List<String> argsList = List.of(args);
-            Game game = null;
-            try {
-                int numberOfGames = Integer.parseInt(getArgValueOrDefault(argsList, "ng"));
-                game = initGameFromArgs(argsList);
-                int x = 0;
-                while (x < numberOfGames) {
-                    try {
-                        game.startGame();
-                        game.switchSeats();
-                    } catch (Exception e) {
-                        System.out.println("An Error occurred during execution of the game!");
-                        System.out.println(e.getMessage());
-                        e.printStackTrace();
+            if (args.length == 1 && args[0].equals("custom")) {
+                startCustomGame();
+            } else {
+                initDefaults();
+                List<String> argsList = List.of(args);
+                Game game = null;
+                try {
+                    int numberOfGames = Integer.parseInt(getArgValueOrDefault(argsList, "ng"));
+                    game = initGameFromArgs(argsList);
+                    int x = 0;
+                    while (x < numberOfGames) {
+                        try {
+                            game.startGame();
+                            game.switchSeats();
+                        } catch (Exception e) {
+                            System.out.println("An Error occurred during execution of the game!");
+                            System.out.println(e.getMessage());
+                            e.printStackTrace();
+                        }
+                        x++;
                     }
-                    x++;
+                } catch (NoSuchElementException | SocketException e) {
+                    //connection lost
+                } catch (IOException e) {
+                    System.out.println("An Input/Output Error occurred : " + e.getMessage());
+                    e.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    printUsage(argsList);
                 }
-            } catch (NoSuchElementException | SocketException e) {
-                //connection lost
-            } catch (Exception e) {
-                e.printStackTrace();
-                printUsage(argsList);
-            }
-            if (game != null) {
-                game.shutDown();
+                if (game != null) {
+                    game.shutDown();
+                }
             }
         } else {
             try {
@@ -66,7 +79,59 @@ public class Main {
                 e.printStackTrace();
             }
         }
+    }
 
+    private static void setAndInitTmpdir() {
+        String basePath = System.getProperty("user.dir");
+        Map<String, String> env = System.getenv();
+
+        if (!env.containsKey("TMPDIR")) {
+            tmpdir = basePath;
+        } else {
+            tmpdir = env.get("TMPDIR");
+            System.out.println("tmpdir set to " + tmpdir);
+            String schaddBaseFilePath = basePath + File.separator + schaddFileName;
+            String schaddTmpdirFilePath = tmpdir + File.separator + schaddFileName;
+            File tempDirSchaddFile = new File(schaddTmpdirFilePath);
+            if (!(tempDirSchaddFile.exists())) {
+                System.out.println("Moving File from " + schaddBaseFilePath + " to " + schaddTmpdirFilePath);
+                try {
+                    Files.copy(new File(schaddBaseFilePath).toPath(), tempDirSchaddFile.toPath());
+                    if (!(tempDirSchaddFile.exists())) {
+                        System.out.println("Something went wrong wile coping the file! It was not found in destination directory!");
+                    }
+                    if (!tempDirSchaddFile.canExecute()) {
+                        System.out.println("The schadd file " + tempDirSchaddFile.getAbsolutePath() + " is not executable. Trying to make it executable");
+                        if (!tempDirSchaddFile.setExecutable(true)) {
+                            System.out.println("Failed to set schadd file " + tempDirSchaddFile.getAbsolutePath() + " as executable");
+                        }
+                    }
+                } catch (IOException e) {
+                    System.out.println("Error when trying to copy schadd binary to TempDir: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            System.out.println("Does " + tempDirSchaddFile.getAbsolutePath() + " exist? " + tempDirSchaddFile.exists() + ", is this file executable? " + tempDirSchaddFile.canExecute());
+        }
+    }
+
+    private static void startCustomGame() {
+        Player player1 = new SteeredMaterialPlayer(500, true, "uct");
+        Player player2 = new StreamPlayer(System.in, System.out);
+
+        Board board = new Board(BoardSize.LARGE, "\u0080\u0000\b\u0000\b\u0004\u0010\u0080\u0000\u0080\u0000\b");
+//        Player player1 = new SteeredMctsPlayer(5000, true, new MctsStateStorage(new UctStateStatistics()));
+//        Player player2 = new SteeredMctsPlayer(500, true, new MctsStateStorage(new SimpleGameStateStatistic()), "uct");
+//        Board board = Board.fromB64("QABAAAIAFCAAIABA", BoardSize.LARGE); // Material Failure State
+
+//        Board board = new Board(BoardSize.LARGE);
+        Game game = new Game(board, player1, player2);
+        game.startGame();
+        player1.reset();
+        player2.reset();
+        //        game.switchSeats();
+        game = new Game(board, player2, player1);
+        game.startGame();
     }
 
     /**
@@ -89,6 +154,7 @@ public class Main {
         defaults.put("-sp1t", "1");
         defaults.put("-sp2t", "1");
         defaults.put("-ng", "1");
+        defaults.put("-of", "Games.csv");
     }
 
     /**
@@ -130,7 +196,7 @@ public class Main {
                 }
             }
         }
-        Game game = new Game(BoardSize.LARGE, verbose, new LinkedList<>(), false);
+        Game game = new Game(BoardSize.LARGE, new LinkedList<>(), verbose, "Games.csv", false);
         game.player1 = p1;
         game.player2 = p2;
         return game;
@@ -149,6 +215,7 @@ public class Main {
 
     /**
      * Prints usage-information to the command line
+     *
      * @param argsList
      */
     private static void printUsage(List<String> argsList) {
@@ -186,6 +253,8 @@ public class Main {
         System.out.println(printOptionString("-p:", "the port that's used to initialize the socket player. (only effective for socket player)"));
         System.out.println(printOptionString("-is:", "the initial state of the board."));
         System.out.println(printOptionString("-d:", "depth of alpha better player (only effective for socket player)."));
+        System.out.println(printOptionString("-wo:", "write outputs."));
+        System.out.println(printOptionString("-of:", "output filename."));
 
     }
 
@@ -227,9 +296,9 @@ public class Main {
     private static Game getGameWithInitialStateOrFromArgs(List<String> argsList, BoardSize size, boolean verbose) throws Exception {
         Game game;
         if (argsList.contains("-is")) {
-            game = new Game(Board.fromB64(getArgValueOrDefault(argsList, "is"), size), argsList, argsList.contains("-wo"));
+            game = new Game(Board.fromB64(getArgValueOrDefault(argsList, "is"), size), argsList, argsList.contains("-wo"), getArgValueOrDefault(argsList, "of"));
         } else {
-            game = new Game(size, verbose, argsList, argsList.contains("-wo"));
+            game = new Game(size, argsList, argsList.contains("-wo"), getArgValueOrDefault(argsList, "of"), verbose);
         }
         return game;
     }
@@ -247,39 +316,67 @@ public class Main {
 
         switch (playerType) {
             case "uct":
-                if (argsList.contains(playerName + "Ef")) {
+                if (argsList.contains("-" + playerName + "Ef")) {
                     double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
                     return new SteeredMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, "uct");
                 } else {
-                    return new SteeredMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"));
+                    return new SteeredMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), "uct");
                 }
             case "uctR":
-                if (argsList.contains(playerName + "Ef")) {
+                if (argsList.contains("-" + playerName + "Ef")) {
                     double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
-                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")));
+                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "uct");
                 } else {
-                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")));
+                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "uct");
                 }
             case "uctM":
-                if (argsList.contains(playerName + "Ef")) {
+                if (argsList.contains("-" + playerName + "Ef")) {
                     double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
                     return new SteeredMaterialPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "uct");
                 } else {
-                    return new SteeredMaterialPlayer(millisToRun);
+                    return new SteeredMaterialPlayer(millisToRun, argsList.contains("-" + playerName + "v"), "uct");
+                }
+            case "puctR":
+                if (argsList.contains("-" + playerName + "Ef")) {
+                    double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
+                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "puct");
+                } else {
+                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "puct");
                 }
             case "puctM":
-                if (argsList.contains(playerName + "Ef")) {
+                if (argsList.contains("-" + playerName + "Ef")) {
                     double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
                     return new SteeredMaterialPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "puct");
                 } else {
                     return new SteeredMaterialPlayer(millisToRun, argsList.contains("-" + playerName + "v"), Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "puct");
                 }
             case "puct":
-                if (argsList.contains(playerName + "Ef")) {
+                if (argsList.contains("-" + playerName + "Ef")) {
                     double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
                     return new SteeredMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, "puct");
                 } else {
                     return new SteeredMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), "puct");
+                }
+            case "pucts":
+                if (argsList.contains("-" + playerName + "Ef")) {
+                    double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
+                    return new SteeredMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, "pucts");
+                } else {
+                    return new SteeredMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), "pucts");
+                }
+            case "puctsR":
+                if (argsList.contains("-" + playerName + "Ef")) {
+                    double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
+                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "pucts");
+                } else {
+                    return new SteeredRandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"), Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "pucts");
+                }
+            case "puctsM":
+                if (argsList.contains("-" + playerName + "Ef")) {
+                    double ef = Double.parseDouble(getArgValueOrDefault(argsList, playerName + "Ef"));
+                    return new SteeredMaterialPlayer(millisToRun, argsList.contains("-" + playerName + "v"), ef, Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "pucts");
+                } else {
+                    return new SteeredMaterialPlayer(millisToRun, argsList.contains("-" + playerName + "v"), Integer.parseInt(getArgValueOrDefault(argsList, playerName + "D")), "pucts");
                 }
             case "random":
                 return new RandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"));
@@ -288,13 +385,12 @@ public class Main {
                 int alphaBetaDepth = Integer.parseInt(getArgValueOrDefault(argsList, "d"));
                 return StreamPlayer.initFromSocket(port, alphaBetaDepth);
             case "schadd":
-                String executionPath = System.getProperty("user.dir");
                 int schaddPlayerType = Integer.parseInt(getArgValueOrDefault(argsList, "s" + playerName + "t"));
-                return StreamPlayer.initWithExecutable(millisToRun, "\"" + executionPath + "\\Fanorona_improved.jar\"", new SchaddsPlayerCommunicationDelegate(), schaddPlayerType, argsList.contains("-" + playerName + "v"));
+                return StreamPlayer.initWithSchaddExecutable(millisToRun, Main.tmpdir + File.separator + Main.schaddFileName, new SchaddsPlayerCommunicationDelegate(), schaddPlayerType, argsList.contains("-" + playerName + "v"));
             case "human":
                 return new StreamPlayer(System.in, System.out);
             default:
-                throw new Exception("Unknown type of player");
+                throw new Exception("Unknown type of player: " + playerType);
         }
 
     }
@@ -334,6 +430,26 @@ public class Main {
             default:
                 System.out.println("Invalid board size");
                 return BoardSize.LARGE;
+        }
+    }
+
+    private static void ListDirContent() {
+        // Creates an array in which we will store the names of files and directories
+        String[] pathnames;
+        String basePath = System.getProperty("user.dir");
+
+        // Creates a new File instance by converting the given pathname string
+        // into an abstract pathname
+        File dir = new File(basePath);
+
+        // Populates the array with names of files and directories
+        pathnames = dir.list();
+
+        // For each pathname in the pathnames array
+        for (String pathname : pathnames) {
+            // Print the names of files and directories
+            File currfile = new File(pathname);
+            System.out.println(currfile.getAbsoluteFile() + " exists: " + currfile.exists() + " " + currfile.canExecute());
         }
     }
 }

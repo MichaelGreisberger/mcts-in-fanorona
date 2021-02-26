@@ -253,4 +253,16 @@ public class BoardState implements Cloneable {
     public void reset() {
         cState = getInitialState(size).toCharArray();
     }
+
+    public int countPieces(int player) {
+        int count = 0;
+        for (int x = 0; x < size.x(); x++) {
+            for (int y = 0; y < size.y(); y++) {
+                if (getPosition(x, y) == player) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
 }

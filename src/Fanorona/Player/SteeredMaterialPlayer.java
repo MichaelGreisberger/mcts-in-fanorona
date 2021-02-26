@@ -2,8 +2,8 @@ package Fanorona.Player;
 
 import Fanorona.Board.Board;
 import Fanorona.Move.MoveList;
-import Fanorona.mcts.MaterialStateStatistic;
 import Fanorona.mcts.MctsStateStorage;
+import Fanorona.mcts.SimpleGameStateStatistic;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,8 +14,8 @@ public class SteeredMaterialPlayer extends SteeredMctsPlayer {
      */
     public final int MATERIAL_DEPTH;
 
-    public SteeredMaterialPlayer(int millisToRun) {
-        super(millisToRun, true);
+    public SteeredMaterialPlayer(int millisToRun, boolean verbose, String type) {
+        super(millisToRun, verbose, new MctsStateStorage(new SimpleGameStateStatistic()), type);
         MATERIAL_DEPTH = 10;
     }
 
@@ -24,7 +24,7 @@ public class SteeredMaterialPlayer extends SteeredMctsPlayer {
     }
 
     public SteeredMaterialPlayer(int millisToRun, boolean verbose, double explorationFactor, int materialDepth, String type) {
-        super(millisToRun, verbose, explorationFactor, new MctsStateStorage(new MaterialStateStatistic()), type);
+        super(millisToRun, verbose, explorationFactor, new MctsStateStorage(new SimpleGameStateStatistic()), type);
         this.MATERIAL_DEPTH = materialDepth;
     }
 
@@ -55,23 +55,20 @@ public class SteeredMaterialPlayer extends SteeredMctsPlayer {
             moves = board.getPossibleMoves();
             depth++;
         }
-        backpropagate(statesPlayer, statesOpponent, material(board));
+        backpropagate(statesPlayer, statesOpponent, calcMaterial(board, player));
     }
 
-    private int material(Board board) {
-        if (board.getCurrentPlayer() == 1) {
-            return board.getBlackPieces() - board.getWhitePieces();
+    private double calcMaterial(Board board, int player) {
+        int whitePieces = board.getWhitePieces();
+        int blackPieces = board.getBlackPieces();
+        if (player == 1) {
+            return calcMaterial(whitePieces, blackPieces);
         } else {
-            return board.getWhitePieces() - board.getBlackPieces();
+            return calcMaterial(blackPieces, whitePieces);
         }
     }
 
-    protected void backpropagate(Set<String> statesPlayer, Set<String> statesOpponent, int material) {
-        for (String stateB64 : statesPlayer) {
-            ((MaterialStateStatistic) storage.addState(stateB64)).update(material);
-        }
-        for (String stateB64 : statesOpponent) {
-            ((MaterialStateStatistic) storage.addState(stateB64)).update(-material);
-        }
+    private double calcMaterial(int myPieces, int theirPieces) {
+        return myPieces - theirPieces;
     }
 }

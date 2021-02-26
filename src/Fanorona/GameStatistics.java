@@ -3,6 +3,7 @@ package Fanorona;
 import Fanorona.Move.Move;
 import Fanorona.Player.PlayerWrapper;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -15,21 +16,24 @@ import java.util.Iterator;
 import java.util.List;
 
 public class GameStatistics {
-    char csvSeperator = ';';
+    private char csvSeperator = ';';
     private Date startingTime;
     private List<String> arguments;
     private PlayerWrapper p1;
     private PlayerWrapper p2;
     private String result;
     private String userdir = System.getProperty("user.dir");
-    private String pathSeparator = "\\";
-    String basePath = userdir + pathSeparator + "Games" + pathSeparator + "GameLog" + pathSeparator;
+    private String pathSeparator = File.separator;
+    private String basePath = userdir + pathSeparator + "Games" + pathSeparator + "GameLog" + pathSeparator;
     private String newLine = "\n";
     private String tab = "\t";
+    private String statFileName;
 
 
-    public GameStatistics() {
+    public GameStatistics(String statFileName) {
         this.startingTime = Calendar.getInstance().getTime();
+        this.statFileName = statFileName;
+        System.out.println(basePath);
     }
 
     public List<String> getArguments() {
@@ -121,7 +125,7 @@ public class GameStatistics {
         csvAppend(sb, String.join(", ", p2.simulatedGames));
         csvAppend(sb, String.join(", ", p2.storedStates));
         sb.append(newLine);
-        writeFile(sb.toString(), basePath + "Games.csv");
+        writeFile(sb.toString(), basePath + statFileName);
     }
 
     private void csvAppend(StringBuilder sb, String text) {
