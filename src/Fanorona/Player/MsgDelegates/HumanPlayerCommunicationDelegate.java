@@ -6,6 +6,9 @@ import Fanorona.Move.Move;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+/**
+ * Provides an interface to communicate with a human player over a stream (for example through the console)
+ */
 public class HumanPlayerCommunicationDelegate implements StreamPlayerCommunicationDelegate {
     private StringBuilder sb = new StringBuilder();
 

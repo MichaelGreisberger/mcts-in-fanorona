@@ -9,6 +9,9 @@ import Fanorona.mcts.SimpleGameStateStatistic;
 
 import java.util.Set;
 
+/**
+ * The base class for all artificial players
+ */
 public abstract class MctsMachinePlayer implements Player {
     /**
      * how long may the simulation run before the next move must be selected.
@@ -35,6 +38,9 @@ public abstract class MctsMachinePlayer implements Player {
         this(millisToRun, verbose, new MctsStateStorage(new SimpleGameStateStatistic()));
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public abstract Move getNextMove(Board board);
 
@@ -52,6 +58,15 @@ public abstract class MctsMachinePlayer implements Player {
         return bestMove;
     }
 
+    /**
+     * Prints information to the console. This information contains the number of simulations, the number of states and the
+     * possible moves as well as statistics regarding those moves
+     *
+     * @param board          current board
+     * @param possibleMoves  current possible moves
+     * @param counter        number of simulated games
+     * @param stateCountPrev number of previously stored states
+     */
     void printVerbosityMsg(Board board, MoveList possibleMoves, int counter, int stateCountPrev) {
         if (verbose) {
             System.out.println("Simulated " + counter + " games. Thats " + (double)counter / MILLIS_TO_RUN * 1000 + " simulations per second."); //The Simulation is overdue for " + (System.currentTimeMillis() - millisStop) + " millis."
@@ -62,12 +77,18 @@ public abstract class MctsMachinePlayer implements Player {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public Player reset() {
         storage.reset();
         return this;
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public void shutDown() {
         //nothing to do here
@@ -75,6 +96,9 @@ public abstract class MctsMachinePlayer implements Player {
 
     protected abstract GameStateStatistic getStatistics(Board board, Move move);
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public int getNumberOfStoredStates() {
         return storage.getStateCount();
@@ -92,12 +116,19 @@ public abstract class MctsMachinePlayer implements Player {
         return result;
     }
 
+    /**
+     * back propagates the result to all states of player and opponent
+     *
+     * @param statesPlayer   states of this player that where touched during a game
+     * @param statesOpponent states of the opponent that where touched during a game
+     * @param result         result of the game
+     */
     void backpropagate(Set<String> statesPlayer, Set<String> statesOpponent, double result) {
         for (String stateB64 : statesPlayer) {
             storage.addState(stateB64).update(result);
         }
         for (String stateB64 : statesOpponent) {
-            storage.addState(stateB64).update(-result);
+            storage.addState(stateB64).update(1 - result);
         }
     }
 }

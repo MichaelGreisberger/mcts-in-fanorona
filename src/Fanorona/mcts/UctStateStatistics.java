@@ -14,7 +14,7 @@ public class UctStateStatistics implements GameStateStatistic {
         if (wonGames + drawGames + lostGames == 0) {
             return 0;
         } else {
-            return ((double) wonGames + (double) drawGames / 100) / (wonGames + lostGames + drawGames);
+            return ((double) wonGames) / (wonGames + lostGames + drawGames);
         }
     }
 

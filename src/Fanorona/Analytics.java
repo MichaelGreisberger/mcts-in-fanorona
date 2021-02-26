@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * This class was used to analyse the branching factor of Fanorona games played with this Framework.
+ */
 public class Analytics {
 
     private int[] branchingCountPerPiece = new int[44];
@@ -61,7 +64,6 @@ public class Analytics {
                 System.out.println();
             }
             System.out.println(analytics.getPythonStyleListString());
-//            analytics.printAllValuesOfSingleBranchingFactor(33);
             for (String b64S : analytics.highBfStates.values()) {
                 Board board = Board.fromB64(b64S, BoardSize.LARGE);
                 MoveList possibleMoves = board.getPossibleMoves();
@@ -124,9 +126,6 @@ public class Analytics {
                 if (!highBfStates.containsKey(board.toPrintString())) {
                     highBfStates.put(board.toPrintString(), board.getStateB64());
                 }
-//                System.out.println("with " + (pieceCount + 1) + " pieces on Board there are " + possibleMoves.size() + " possible");
-//                System.out.println(board.toPrintString());
-//                System.out.println(possibleMoves);
             }
             singleBranchingFactorsPerPiecesOnBoard.get(pieceCount).add(possibleMoves.size());
             branchingSumPerPiece[pieceCount] += possibleMoves.size();

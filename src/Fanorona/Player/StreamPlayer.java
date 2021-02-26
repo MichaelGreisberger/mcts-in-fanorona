@@ -1,12 +1,10 @@
 package Fanorona.Player;
 
 import Fanorona.Board.Board;
-import Fanorona.Board.BoardSize;
 import Fanorona.Main;
 import Fanorona.Move.Move;
 import Fanorona.Move.MoveList;
 import Fanorona.Player.MsgDelegates.HumanPlayerCommunicationDelegate;
-import Fanorona.Player.MsgDelegates.RafSocketCommunicationDelegate;
 import Fanorona.Player.MsgDelegates.StreamPlayerCommunicationDelegate;
 
 import java.io.BufferedReader;
@@ -17,7 +15,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
-import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.Scanner;
 
@@ -52,13 +49,6 @@ public class StreamPlayer implements Player {
 
     public StreamPlayer(InputStream in, OutputStream out) {
         this(in, out, new HumanPlayerCommunicationDelegate());
-    }
-
-    public static Player initFromSocket(int port, int alphaBetaDepth) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(port);
-        Socket socket = serverSocket.accept();
-        serverSocket.close();
-        return new StreamPlayer(socket.getInputStream(), socket.getOutputStream(), new RafSocketCommunicationDelegate(alphaBetaDepth, BoardSize.LARGE), socket);
     }
 
     public static Player initWithSchaddExecutable(int millisToRun, String schaddFilePath, StreamPlayerCommunicationDelegate delegate, int schaddPlayerType, boolean verbose) throws IOException {

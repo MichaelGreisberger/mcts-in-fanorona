@@ -35,6 +35,9 @@ public class RandomMctsPlayer extends MctsMachinePlayer {
         }
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     public Move getNextMove(Board board) {
         long millisStop = System.currentTimeMillis() + MILLIS_TO_RUN;
@@ -99,6 +102,9 @@ public class RandomMctsPlayer extends MctsMachinePlayer {
         return (int) ((RAND.nextDouble() - Double.MIN_VALUE) * bound);
     }
 
+    /**
+     * @inheritDoc
+     */
     @Override
     Move selectBestMove(Board board, MoveList possibleMoves) {
         List<Move> bestMoves = new ArrayList<>(20);

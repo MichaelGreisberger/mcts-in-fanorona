@@ -15,6 +15,9 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Used to gather statistics of a game during execution and to write those to console and to files
+ */
 public class GameStatistics {
     private char csvSeperator = ';';
     private Date startingTime;

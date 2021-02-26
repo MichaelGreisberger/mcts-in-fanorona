@@ -6,13 +6,11 @@ import Fanorona.Move.Move;
 import java.io.BufferedReader;
 import java.io.IOException;
 
+/**
+ * Provides an interface to communicate with the players provided by Maarten Schadd from Maastricht University.
+ * This class is useless unless you have a copy of the binaries provided by Maarten Schadd.
+ */
 public class SchaddsPlayerCommunicationDelegate implements StreamPlayerCommunicationDelegate {
-
-//    private final Process process;
-//
-//    public SchaddsPlayerCommunicationDelegate(Process process) {
-//        this.process = process;
-//    }
 
     @Override
     public String getNextMoveMsg(Board board) {
@@ -20,7 +18,7 @@ public class SchaddsPlayerCommunicationDelegate implements StreamPlayerCommunica
         if (lastMove == null) {
             return "Start";
         } else {
-            return board.getLastMove().toSchaddMoveString();
+            return lastMove.toSchaddMoveString();
         }
     }
 
@@ -28,7 +26,6 @@ public class SchaddsPlayerCommunicationDelegate implements StreamPlayerCommunica
     public Move parseMoveMsg(BufferedReader in) throws IOException {
         while (true) {
             String msg = in.readLine().trim();
-//            System.out.println(msg);
             if (isMoveString(msg)) {
                 msg = msg.replace("-", "");
                 if (msg.length() == 4) {

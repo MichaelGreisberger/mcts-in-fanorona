@@ -16,7 +16,6 @@ import java.util.List;
 public class Board {
     private BoardState state;
     private Move lastMove;
-    private List<Point> capturedLastRound;
     private int whitePieces;
     private int blackPieces;
 
@@ -40,7 +39,6 @@ public class Board {
         this.state = state;
         this.whitePieces = whitePieces;
         this.blackPieces = blackPieces;
-        this.capturedLastRound = new LinkedList<>();
     }
 
     /**
@@ -58,15 +56,6 @@ public class Board {
 
     public BoardState getState() {
         return state;
-    }
-
-    /**
-     * Returns a list of all positions captured by the last capturing move
-     *
-     * @return
-     */
-    public List<Point> getCapturedLastRound() {
-        return capturedLastRound;
     }
 
     public Move getLastMove() {
@@ -232,7 +221,6 @@ public class Board {
      */
     private void capture(Point node, int dirX, int dirY, int opponent) {
         state.setPosition(node, 0);
-        capturedLastRound.add((Point) node.clone());
 
         if (opponent == 1) {
             whitePieces--;
@@ -435,7 +423,6 @@ public class Board {
     public void reset() {
         this.blackPieces = state.getSize().maxPiecesPP();
         this.whitePieces = state.getSize().maxPiecesPP();
-        this.capturedLastRound = new LinkedList<>();
         this.lastMove = null;
         this.state.reset();
     }

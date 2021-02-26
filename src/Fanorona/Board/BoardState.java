@@ -254,6 +254,12 @@ public class BoardState implements Cloneable {
         cState = getInitialState(size).toCharArray();
     }
 
+    /**
+     * Counts the number of peaces on the board of a certain player
+     *
+     * @param player the player for which to count the pieces
+     * @return the number of peaces a player has left in this position
+     */
     public int countPieces(int player) {
         int count = 0;
         for (int x = 0; x < size.x(); x++) {

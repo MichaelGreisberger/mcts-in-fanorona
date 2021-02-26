@@ -380,10 +380,6 @@ public class Main {
                 }
             case "random":
                 return new RandomMctsPlayer(millisToRun, argsList.contains("-" + playerName + "v"));
-            case "socket":
-                int port = Integer.parseInt(getArgValueOrDefault(argsList, "p"));
-                int alphaBetaDepth = Integer.parseInt(getArgValueOrDefault(argsList, "d"));
-                return StreamPlayer.initFromSocket(port, alphaBetaDepth);
             case "schadd":
                 int schaddPlayerType = Integer.parseInt(getArgValueOrDefault(argsList, "s" + playerName + "t"));
                 return StreamPlayer.initWithSchaddExecutable(millisToRun, Main.tmpdir + File.separator + Main.schaddFileName, new SchaddsPlayerCommunicationDelegate(), schaddPlayerType, argsList.contains("-" + playerName + "v"));
