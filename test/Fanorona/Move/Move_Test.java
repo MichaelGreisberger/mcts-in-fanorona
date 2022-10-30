@@ -59,13 +59,4 @@ class Move_Test {
         Move move = new Move("fdjkalö");
         System.out.println(move.toString());
     }
-//    @Test
-//    public void testCreateMove_failureToShort() {
-//        Fanorona.Move.Move move = new Fanorona.Move.Move(new Point[] {new Point(0,0)}, new MoveType[] {});
-//        Exception expectedException = assertThrows(Exception.class, () -> move.isValidMove());
-//
-//        String expectedMessage = Fanorona.Move.Move.MOVES_TO_SHORT_ERROR_MESSAGE;
-//        String actualMessage = expectedException.getMessage();
-//        assertEquals(expectedMessage, actualMessage);
-//    }
 }
